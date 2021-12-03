@@ -1,0 +1,22 @@
+{
+  "name": "filimo-plus-cli",
+  "version": "1.0.0",
+  "description": "download filimo items",
+  "license": "MIT",
+  "scripts": {
+    "build": "rm -rf dist/* && tsc",
+    "filimo-plus-cli": "node dist/App.js"
+  },
+  "author": {
+    "name": "SaeedPooyanfar",
+    "email": "saeedp47@gmail.com",
+    "url": "https://github.com/Saeed-Pooyanfar"
+  },
+  "dependencies": {
+    "axios": "^0.24.0"
+  },
+  "devDependencies": {
+    "@types/node": "^16.11.11",
+    "typescript": "^4.5.2"
+  }
+}
