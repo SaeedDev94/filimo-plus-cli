@@ -19,6 +19,7 @@ You must create account in [filimo](https://www.filimo.com) and buy subscription
 + Download latest version from releases section
 + Cd to project directory
 + Run: `npm install`
++ Run: `npm run build`
 + Run: `npm run filimo-plus-cli`
 + Follow steps
 
