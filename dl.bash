@@ -13,5 +13,5 @@ if [ -n "$audioStream" ]
 then
   ffmpeg -i "$videoStream" -i "$audioStream" -map 0:v -map 1:a -codec copy -shortest -y "$videoFile" </dev/null >/dev/null 2> "$logFile" &
 else
-  ffmpeg -i "$videoStream" -c:v copy -c:a copy -bsf:a aac_adtstoasc -y "$videoFile" </dev/null >/dev/null 2> "$logFile" &
+  ffmpeg -i "$videoStream" -codec copy -y "$videoFile" </dev/null >/dev/null 2> "$logFile" &
 fi
