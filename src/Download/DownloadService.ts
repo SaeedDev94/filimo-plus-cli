@@ -1,5 +1,5 @@
-import { execSync } from 'child_process';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
+import { exec, execSync } from 'child_process';
+import { closeSync, existsSync, mkdirSync, openSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { ClientService } from '../Client/ClientService';
 import { IDownload } from '../Dom/DomInterface';
@@ -75,7 +75,14 @@ export class DownloadService {
       console.log('Subtitle downloaded:', subtitleFile);
     }
 
-    execSync(`bash ${process.cwd()}/dl.bash "${downloadDir}" "${download.id}" "${video}" "${audio ? audio : ''}"`);
+    if (process.platform === 'win32') {
+      closeSync(openSync(`${downloadDir}\\${download.id}.log`, 'w'));
+      exec(`${process.cwd()}\\dl.bat "${downloadDir}" "${download.id}" "${video}" "${audio ? audio : ''}"`);
+    }
+
+    if (process.platform === 'linux') {
+      execSync(`bash ${process.cwd()}/dl.bash "${downloadDir}" "${download.id}" "${video}" "${audio ? audio : ''}"`);
+    }
 
     return true;
   }

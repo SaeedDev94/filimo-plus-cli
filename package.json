@@ -1,10 +1,11 @@
 {
   "name": "filimo-plus-cli",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "download filimo items",
   "license": "MIT",
   "scripts": {
-    "build": "rm -rf dist/* && tsc",
+    "build:linux": "rm -rf dist/* && tsc",
+    "build:win32": "(if exist dist rd /s /q dist) && node_modules\\.bin\\tsc",
     "filimo-plus-cli": "node dist/App.js"
   },
   "author": {

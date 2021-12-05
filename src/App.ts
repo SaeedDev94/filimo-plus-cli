@@ -18,9 +18,9 @@ class App {
     console.log(`${packageJson.name} v${packageJson.version}`);
     console.log(`Author: ${packageJson.author.name}`);
 
-    if (process.platform !== 'linux') {
+    if (['win32', 'linux'].indexOf(process.platform) === -1) {
       console.error('Sorry!');
-      console.error('For now this app works only on linux distributions');
+      console.error('You are using an unsupported platform');
       return;
     }
 
