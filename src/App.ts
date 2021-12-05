@@ -102,30 +102,22 @@ class App {
   }
 
   private async watch(id: string): Promise<void> {
-    const downloadDir: string = join(process.cwd(), 'movie', id);
-    const logFile: string = join(downloadDir, `${id}.log`);
-    const movieFile: string = join(downloadDir, `${id}.mp4`);
-
-    const printProgress = async () => {
-      const progress: number = DownloadService.calcDownloadProgress(readFileSync(logFile).toString());
-      if (progress <= 100) {
-        process.stdout.clearLine(0);
-        process.stdout.cursorTo(0);
-        process.stdout.write(`${progress}%`);
-        if (progress !== 100) {
-          await App.wait(1000);
-          await printProgress();
-          return;
-        }
+    const progress: number = DownloadService.calcDownloadProgress(id);
+    if (progress <= 100) {
+      process.stdout.clearLine(0);
+      process.stdout.cursorTo(0);
+      process.stdout.write(`${progress}%`);
+      if (progress !== 100) {
+        await App.wait(1000);
+        await this.watch(id);
+        return;
       }
-      process.stdout.write('\n');
-      console.log(`Movie downloaded: ${movieFile}`);
-      console.log("Don't upload this file for public access");
-      console.log('Use it for yourself only');
-      console.log('Thanks!');
-    };
-
-    await printProgress();
+    }
+    process.stdout.write('\n');
+    console.log(`Item "${id}" downloaded`);
+    console.log("Don't upload this file for public access");
+    console.log('Use it for yourself only');
+    console.log('Thanks!');
   }
 
 }

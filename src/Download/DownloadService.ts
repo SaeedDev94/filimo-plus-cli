@@ -1,5 +1,5 @@
 import { execSync } from 'child_process';
-import { existsSync, mkdirSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { ClientService } from '../Client/ClientService';
 import { IDownload } from '../Dom/DomInterface';
@@ -9,12 +9,15 @@ export class DownloadService {
   constructor(
     private clientService: ClientService
   ) {
-    this.movieDir = join(process.cwd(), 'movie');
   }
 
-  movieDir: string;
+  private static readonly movieDir: string = join(process.cwd(), 'movie');
 
-  static calcDownloadProgress(log: string): number {
+  static calcDownloadProgress(id: string): number {
+    const downloadDir: string = join(DownloadService.movieDir, id);
+    const logFile: string = join(downloadDir, `${id}.log`);
+    const log: string = readFileSync(logFile).toString();
+
     let totalDuration = 0;
     const strTotalDuration = [...log.matchAll(/Duration: (.*), start:/g)]
       .map((i) => i[1])
@@ -49,14 +52,10 @@ export class DownloadService {
     return seconds;
   }
 
-  private createMovieDir(): void {
-    if (!existsSync(this.movieDir)) mkdirSync(this.movieDir);
-  }
-
   async start(download: IDownload, video: string, audio: string | null): Promise<boolean> {
-    this.createMovieDir();
+    if (!existsSync(DownloadService.movieDir)) mkdirSync(DownloadService.movieDir);
 
-    const downloadDir = join(this.movieDir, download.id);
+    const downloadDir = join(DownloadService.movieDir, download.id);
     const infoFile = join(downloadDir, 'info.json');
     const subtitleFile = join(downloadDir, `${download.id}.srt`);
 
