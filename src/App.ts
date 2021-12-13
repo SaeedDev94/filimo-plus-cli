@@ -11,15 +11,17 @@ import { ReadlineService } from './Readline/ReadlineService';
 
 class App {
 
-  static wait(duration: number): Promise<string> {
-    return new Promise<string>((resolve) => setTimeout(() => resolve('next'), duration));
-  }
+  private static packageJson: {
+    name: string,
+    version: string,
+    author: {
+      name: string,
+      email: string,
+      url: string
+    }
+  } = JSON.parse(readFileSync(join(process.cwd(), 'package.json')).toString());
 
-  async main(): Promise<void> {
-    const packageJson: any = JSON.parse(readFileSync(join(process.cwd(), 'package.json')).toString());
-    console.log(`${packageJson.name} v${packageJson.version}`);
-    console.log(`Author: ${packageJson.author.name}`);
-
+  static main(args: string[]): void {
     if (['win32', 'linux'].indexOf(process.platform) === -1) {
       console.error('Sorry!');
       console.error('You are using an unsupported platform');
@@ -33,10 +35,39 @@ class App {
       return;
     }
 
-    await this.download();
+    const firstArg: string | undefined = args[0];
+
+    if (firstArg === '--version') {
+      App.printVersion();
+      return;
+    }
+
+    if (firstArg === '--author') {
+      App.printAuthor();
+      return;
+    }
+
+    App.printVersion();
+    App.printAuthor();
+
+    (async () => await new App().download(firstArg))();
   }
 
-  private async download(): Promise<void> {
+  private static printVersion(): void {
+    console.log(`${App.packageJson.name} v${App.packageJson.version}`);
+  }
+
+  private static printAuthor(): void {
+    console.log(`Author: ${App.packageJson.author.name}`);
+  }
+
+  private static wait(duration: number): Promise<string> {
+    return new Promise<string>((resolve) => setTimeout(() => resolve('next'), duration));
+  }
+
+  private async download(itemId?: string): Promise<void> {
+    let id: string | undefined = itemId;
+
     const authService = new AuthService();
     const userAgent: string = authService.getUserAgent();
     let authToken: string | null = authService.getToken();
@@ -69,7 +100,7 @@ class App {
     }
     console.log(`UserName: ${userName}`);
 
-    const id: string = await ReadlineService.question('Enter id:');
+    if (!id) id = await ReadlineService.question('Enter id:');
     console.log(`Getting "${id}" info ...`);
     const download = await domService.getDownload(id);
     console.log(`Name: "${download.name}"`);
@@ -124,4 +155,4 @@ class App {
 
 }
 
-new App().main();
+App.main(process.argv.slice(2));
