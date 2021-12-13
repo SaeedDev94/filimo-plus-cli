@@ -11,7 +11,13 @@ import { ReadlineService } from './Readline/ReadlineService';
 
 class App {
 
-  private static packageJson: {
+  constructor(
+    private absolutePath: string
+  ) {
+    this.packageJson = JSON.parse(readFileSync(join(this.absolutePath, 'package.json')).toString());
+  }
+
+  private packageJson: {
     name: string,
     version: string,
     author: {
@@ -19,9 +25,9 @@ class App {
       email: string,
       url: string
     }
-  } = JSON.parse(readFileSync(join(process.cwd(), 'package.json')).toString());
+  };
 
-  static main(args: string[]): void {
+  async main(args: string[]): Promise<void> {
     if (['win32', 'linux'].indexOf(process.platform) === -1) {
       console.error('Sorry!');
       console.error('You are using an unsupported platform');
@@ -38,27 +44,27 @@ class App {
     const firstArg: string | undefined = args[0];
 
     if (firstArg === '--version') {
-      App.printVersion();
+      this.printVersion();
       return;
     }
 
     if (firstArg === '--author') {
-      App.printAuthor();
+      this.printAuthor();
       return;
     }
 
-    App.printVersion();
-    App.printAuthor();
+    this.printVersion();
+    this.printAuthor();
 
-    (async () => await new App().download(firstArg))();
+    await this.download(firstArg);
   }
 
-  private static printVersion(): void {
-    console.log(`${App.packageJson.name} v${App.packageJson.version}`);
+  private printVersion(): void {
+    console.log(`${this.packageJson.name} v${this.packageJson.version}`);
   }
 
-  private static printAuthor(): void {
-    console.log(`Author: ${App.packageJson.author.name}`);
+  private printAuthor(): void {
+    console.log(`Author: ${this.packageJson.author.name}`);
   }
 
   private static wait(duration: number): Promise<string> {
@@ -130,24 +136,28 @@ class App {
     const success = await downloadService.start(download, selectedVariant, selectedTrack);
     if (success) {
       console.log('Download started:');
-      await this.watch(download.id);
+      await this.watch(downloadService, download.id);
     }
   }
 
-  private async watch(id: string): Promise<void> {
-    const progress: number = DownloadService.calcDownloadProgress(id);
+  private async watch(downloadService: DownloadService, id: string): Promise<void> {
+    const progress: number = downloadService.calcDownloadProgress(id);
     if (progress <= 100) {
       process.stdout.clearLine(0);
       process.stdout.cursorTo(0);
       process.stdout.write(`${progress}%`);
       if (progress !== 100) {
         await App.wait(1000);
-        await this.watch(id);
+        await this.watch(downloadService, id);
         return;
       }
     }
     process.stdout.write('\n');
-    console.log(`Item "${id}" downloaded`);
+
+    const downloadDir: string = join(downloadService.movieDir, id);
+    const movieFile: string = join(downloadDir, `${id}.mp4`);
+
+    console.log(`Item downloaded: ${movieFile}`);
     console.log("Don't upload this file for public access");
     console.log('Use it for yourself only');
     console.log('Thanks!');
@@ -155,4 +165,7 @@ class App {
 
 }
 
-App.main(process.argv.slice(2));
+const absolutePath: string = join(__dirname, '..');
+new App(absolutePath).main(process.argv.slice(2));
+
+export { absolutePath };

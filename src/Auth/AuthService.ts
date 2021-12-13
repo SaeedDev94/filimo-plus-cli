@@ -1,10 +1,11 @@
 import { existsSync, readFileSync, rmSync, writeFileSync } from 'fs';
 import { join } from 'path';
+import { absolutePath } from '../App';
 
 export class AuthService {
 
   constructor() {
-    this.tokenFilePath = join(process.cwd(), 'token');
+    this.tokenFilePath = join(absolutePath, 'token');
   }
 
   private readonly tokenFilePath: string;

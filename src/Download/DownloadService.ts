@@ -3,18 +3,32 @@ import { closeSync, existsSync, mkdirSync, openSync, readFileSync, writeFileSync
 import { join } from 'path';
 import { ClientService } from '../Client/ClientService';
 import { IDownload } from '../Dom/DomInterface';
+import { absolutePath } from '../App';
 
 export class DownloadService {
 
   constructor(
     private clientService: ClientService
   ) {
+    this.movieDir = join(absolutePath, 'movie');
   }
 
-  private static readonly movieDir: string = join(process.cwd(), 'movie');
+  readonly movieDir: string;
 
-  static calcDownloadProgress(id: string): number {
-    const downloadDir: string = join(DownloadService.movieDir, id);
+  private static strTimeToSeconds(time: string): number {
+    let seconds = 0;
+    const timeParts = time.split(':');
+    const secondText = timeParts.pop();
+    seconds += secondText ? Number(secondText) || 0 : 0;
+    const minuteText = timeParts.pop();
+    seconds += minuteText ? (Number(minuteText) || 0) * 60 : 0;
+    const hourText = timeParts.pop();
+    seconds += hourText ? (Number(hourText) || 0) * 60 * 60 : 0;
+    return seconds;
+  }
+
+  calcDownloadProgress(id: string): number {
+    const downloadDir: string = join(this.movieDir, id);
     const logFile: string = join(downloadDir, `${id}.log`);
     const log: string = readFileSync(logFile).toString();
 
@@ -40,22 +54,10 @@ export class DownloadService {
     return intProgress > 100 ? 100 : intProgress;
   }
 
-  static strTimeToSeconds(time: string): number {
-    let seconds = 0;
-    const timeParts = time.split(':');
-    const secondText = timeParts.pop();
-    seconds += secondText ? Number(secondText) || 0 : 0;
-    const minuteText = timeParts.pop();
-    seconds += minuteText ? (Number(minuteText) || 0) * 60 : 0;
-    const hourText = timeParts.pop();
-    seconds += hourText ? (Number(hourText) || 0) * 60 * 60 : 0;
-    return seconds;
-  }
-
   async start(download: IDownload, video: string, audio: string | null): Promise<boolean> {
-    if (!existsSync(DownloadService.movieDir)) mkdirSync(DownloadService.movieDir);
+    if (!existsSync(this.movieDir)) mkdirSync(this.movieDir);
 
-    const downloadDir = join(DownloadService.movieDir, download.id);
+    const downloadDir = join(this.movieDir, download.id);
     const infoFile = join(downloadDir, 'info.json');
     const subtitleFile = join(downloadDir, `${download.id}.srt`);
 
@@ -77,11 +79,11 @@ export class DownloadService {
 
     if (process.platform === 'win32') {
       closeSync(openSync(`${downloadDir}\\${download.id}.log`, 'w'));
-      exec(`${process.cwd()}\\dl.bat "${downloadDir}" "${download.id}" "${video}" "${audio ? audio : ''}"`);
+      exec(`${absolutePath}\\dl.bat "${downloadDir}" "${download.id}" "${video}" "${audio ? audio : ''}"`);
     }
 
     if (process.platform === 'linux') {
-      execSync(`bash ${process.cwd()}/dl.bash "${downloadDir}" "${download.id}" "${video}" "${audio ? audio : ''}"`);
+      execSync(`bash ${absolutePath}/dl.bash "${downloadDir}" "${download.id}" "${video}" "${audio ? audio : ''}"`);
     }
 
     return true;
