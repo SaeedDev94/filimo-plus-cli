@@ -15,6 +15,11 @@ You must create account in [filimo](https://www.filimo.com) and buy subscription
 + [Node.js](https://nodejs.org/en)
 + [FFmpeg](https://www.ffmpeg.org)
 
+### Platforms
+
++ linux
++ win32
+
 ### How to run
 
 + Copy `AuthV1` cookie value from filimo
@@ -22,7 +27,8 @@ You must create account in [filimo](https://www.filimo.com) and buy subscription
 + Cd to project directory
 + Run: `npm install`
 + Run: `npm run build:linux` or `npm run build:win32`
-+ Run: `npm run filimo-plus-cli`
++ Run: `npm link`
++ Run: `filimo-plus-cli` or `filimo-plus-cli $ID`
 + Follow steps
 
 ### Support
