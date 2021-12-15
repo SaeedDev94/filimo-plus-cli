@@ -16,14 +16,12 @@ export class DownloadService {
   readonly movieDir: string;
 
   private static strTimeToSeconds(time: string): number {
-    let seconds = 0;
     const timeParts = time.split(':');
-    const secondText = timeParts.pop();
-    seconds += secondText ? Number(secondText) || 0 : 0;
-    const minuteText = timeParts.pop();
-    seconds += minuteText ? (Number(minuteText) || 0) * 60 : 0;
-    const hourText = timeParts.pop();
-    seconds += hourText ? (Number(hourText) || 0) * 60 * 60 : 0;
+    const nextPart = (): number => Number(timeParts.pop()) || 0;
+    let seconds = 0;
+    seconds += nextPart(); // s
+    seconds += nextPart() * 60; // m
+    seconds += nextPart() * 60 * 60; // h
     return seconds;
   }
 
