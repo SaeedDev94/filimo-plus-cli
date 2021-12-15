@@ -28,7 +28,7 @@ class App {
   };
 
   async main(args: string[]): Promise<void> {
-    if (['win32', 'linux'].indexOf(process.platform) === -1) {
+    if (['linux', 'win32'].indexOf(process.platform) === -1) {
       console.error('Sorry!');
       console.error('You are using an unsupported platform');
       return;
@@ -65,10 +65,6 @@ class App {
 
   private printAuthor(): void {
     console.log(`Author: ${this.packageJson.author.name}`);
-  }
-
-  private static wait(duration: number): Promise<string> {
-    return new Promise<string>((resolve) => setTimeout(() => resolve('next'), duration));
   }
 
   private async download(itemId?: string): Promise<void> {
@@ -144,13 +140,15 @@ class App {
   }
 
   private async watch(downloadService: DownloadService, id: string): Promise<void> {
+    const sleep = (duration: number) => new Promise<string>((resolve) => setTimeout(() => resolve('next'), duration));
     const progress: number = downloadService.calcDownloadProgress(id);
+
     if (progress <= 100) {
       process.stdout.clearLine(0);
       process.stdout.cursorTo(0);
       process.stdout.write(`${progress}%`);
       if (progress !== 100) {
-        await App.wait(1000);
+        await sleep(1000);
         await this.watch(downloadService, id);
         return;
       }
