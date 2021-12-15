@@ -133,10 +133,13 @@ class App {
 
     const downloadService = new DownloadService(clientService);
     console.log('Starting download ...');
-    const success = await downloadService.start(download, selectedVariant, selectedTrack);
-    if (success) {
+
+    try {
+      await downloadService.start(download, selectedVariant, selectedTrack);
       console.log('Download started:');
       await this.watch(downloadService, download.id);
+    } catch (exception) {
+      console.error('Oops!', exception);
     }
   }
 
@@ -154,10 +157,7 @@ class App {
     }
     process.stdout.write('\n');
 
-    const downloadDir: string = join(downloadService.movieDir, id);
-    const movieFile: string = join(downloadDir, `${id}.mp4`);
-
-    console.log(`Item downloaded: ${movieFile}`);
+    console.log(`Item downloaded: ${downloadService.itemFile(id)}`);
     console.log("Don't upload this file for public access");
     console.log('Use it for yourself only');
     console.log('Thanks!');

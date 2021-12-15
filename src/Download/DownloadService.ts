@@ -1,4 +1,4 @@
-import { exec, execSync } from 'child_process';
+import { ChildProcess, exec, ExecException } from 'child_process';
 import { closeSync, existsSync, mkdirSync, openSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { ClientService } from '../Client/ClientService';
@@ -10,10 +10,18 @@ export class DownloadService {
   constructor(
     private clientService: ClientService
   ) {
-    this.movieDir = join(absolutePath, 'movie');
   }
 
-  readonly movieDir: string;
+  private static dlScript(): string | null {
+    switch (process.platform) {
+      case 'linux':
+        return `bash ${join(absolutePath, 'dl.bash')}`;
+      case 'win32':
+        return join(absolutePath, 'dl.bat');
+      default:
+        return null;
+    }
+  }
 
   private static strTimeToSeconds(time: string): number {
     const timeParts = time.split(':');
@@ -26,7 +34,7 @@ export class DownloadService {
   }
 
   calcDownloadProgress(id: string): number {
-    const downloadDir: string = join(this.movieDir, id);
+    const downloadDir: string = join(this.movieDir(), id);
     const logFile: string = join(downloadDir, `${id}.log`);
     const log: string = readFileSync(logFile).toString();
 
@@ -52,39 +60,62 @@ export class DownloadService {
     return intProgress > 100 ? 100 : intProgress;
   }
 
-  async start(download: IDownload, video: string, audio: string | null): Promise<boolean> {
-    if (!existsSync(this.movieDir)) mkdirSync(this.movieDir);
+  movieDir(): string {
+    return join(absolutePath, 'movie');
+  }
 
-    const downloadDir = join(this.movieDir, download.id);
-    const infoFile = join(downloadDir, 'info.json');
-    const subtitleFile = join(downloadDir, `${download.id}.srt`);
+  downloadDir(id: string): string {
+    return join(this.movieDir(), id);
+  }
 
-    if (!existsSync(downloadDir)) mkdirSync(downloadDir);
+  infoFile(id: string): string {
+    return join(this.downloadDir(id), 'info.json');
+  }
 
-    writeFileSync(infoFile, JSON.stringify({
+  logFile(id: string): string {
+    return join(this.downloadDir(id), `${id}.log`);
+  }
+
+  subtitleFile(id: string): string {
+    return join(this.downloadDir(id), `${id}.srt`);
+  }
+
+  itemFile(id: string): string {
+    return join(this.downloadDir(id), `${id}.mp4`);
+  }
+
+  async start(download: IDownload, video: string, audio: string | null): Promise<ChildProcess> {
+    // Create movie dir
+    if (!existsSync(this.movieDir())) mkdirSync(this.movieDir());
+    // Create download dir
+    if (!existsSync(this.downloadDir(download.id))) mkdirSync(this.downloadDir(download.id));
+    // Create info file
+    writeFileSync(this.infoFile(download.id), JSON.stringify({
       id: download.id,
       name: download.name,
     }));
-
+    // Create log file
+    closeSync(openSync(this.logFile(download.id), 'w'));
+    // Download subtitle
     if (download.subtitle) {
       console.log('This item has subtitle');
       console.log('Downloading the subtitle ...');
       const res = await this.clientService.getInstance().get(download.subtitle);
       const subtitle = res.data.replace('WEBVTT', '').trim() + '\n';
-      writeFileSync(subtitleFile, subtitle);
-      console.log('Subtitle downloaded:', subtitleFile);
+      writeFileSync(this.subtitleFile(download.id), subtitle);
+      console.log('Subtitle downloaded:', this.subtitleFile(download.id));
     }
-
-    if (process.platform === 'win32') {
-      closeSync(openSync(`${downloadDir}\\${download.id}.log`, 'w'));
-      exec(`${absolutePath}\\dl.bat "${downloadDir}" "${download.id}" "${video}" "${audio ? audio : ''}"`);
-    }
-
-    if (process.platform === 'linux') {
-      execSync(`bash ${absolutePath}/dl.bash "${downloadDir}" "${download.id}" "${video}" "${audio ? audio : ''}"`);
-    }
-
-    return true;
+    // Start download process
+    return new Promise<ChildProcess>((resolve: (value: ChildProcess) => void, reject: (exception: ExecException) => void) => {
+      const dlCommand: string = `${DownloadService.dlScript()} "${this.itemFile(download.id)}" "${this.logFile(download.id)}" "${video}" "${audio ? audio : ''}"`;
+      const process = exec(dlCommand, (error) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        resolve(process);
+      });
+    });
   }
 
 }
