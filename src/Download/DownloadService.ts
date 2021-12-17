@@ -100,8 +100,8 @@ export class DownloadService {
     // Download subtitle
     if (download.subtitle) {
       console.log('Downloading the subtitle ...');
-      const res = await this.clientService.getInstance().get(download.subtitle);
-      const subtitle = res.data.replace('WEBVTT', '').trim() + '\n';
+      const data = await this.clientService.sendRequest(download.subtitle);
+      const subtitle = data.responseBody.toString().replace('WEBVTT', '').trim() + '\n';
       writeFileSync(this.subtitleFile(download.id), subtitle);
       console.log('Subtitle downloaded:', this.subtitleFile(download.id));
     }

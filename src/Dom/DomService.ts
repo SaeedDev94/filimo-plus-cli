@@ -9,9 +9,8 @@ export class DomService {
   }
 
   async getPage(url: string): Promise<string> {
-    const client = this.clientService.getInstance();
-    const response = await client.get(url);
-    return response.data;
+    const data = await this.clientService.sendRequest(url);
+    return data.responseBody.toString();
   }
 
   async getUserName(): Promise<string | undefined> {
