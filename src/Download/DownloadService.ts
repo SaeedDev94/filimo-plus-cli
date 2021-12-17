@@ -8,7 +8,8 @@ import { absolutePath } from '../App';
 export class DownloadService {
 
   constructor(
-    private clientService: ClientService
+    private clientService: ClientService,
+    private quality: string
   ) {
   }
 
@@ -34,9 +35,7 @@ export class DownloadService {
   }
 
   calcDownloadProgress(id: string): number {
-    const downloadDir: string = join(this.movieDir(), id);
-    const logFile: string = join(downloadDir, `${id}.log`);
-    const log: string = readFileSync(logFile).toString();
+    const log: string = readFileSync(this.logFile(id)).toString();
 
     let totalDuration = 0;
     const strTotalDuration = [...log.matchAll(/Duration: (.*), start:/g)]
@@ -65,7 +64,7 @@ export class DownloadService {
   }
 
   downloadDir(id: string): string {
-    return join(this.movieDir(), id);
+    return join(this.movieDir(), id, this.quality);
   }
 
   infoFile(id: string): string {
@@ -84,38 +83,52 @@ export class DownloadService {
     return join(this.downloadDir(id), `${id}.mp4`);
   }
 
-  async start(download: IDownload, video: string, audio: string | null): Promise<ChildProcess> {
+  async start(download: IDownload, video: string, audio?: string): Promise<ChildProcess> {
     // Create movie dir
     if (!existsSync(this.movieDir())) mkdirSync(this.movieDir());
+
     // Create download dir
-    if (!existsSync(this.downloadDir(download.id))) mkdirSync(this.downloadDir(download.id));
+    if (!existsSync(this.downloadDir(download.id))) mkdirSync(this.downloadDir(download.id), { recursive: true });
+
     // Create info file
-    writeFileSync(this.infoFile(download.id), JSON.stringify({
-      id: download.id,
-      name: download.name,
-    }));
+    const info: string = JSON.stringify({ id: download.id, name: download.name });
+    writeFileSync(this.infoFile(download.id), info);
+
     // Create log file
     closeSync(openSync(this.logFile(download.id), 'w'));
+
     // Download subtitle
     if (download.subtitle) {
-      console.log('This item has subtitle');
       console.log('Downloading the subtitle ...');
       const res = await this.clientService.getInstance().get(download.subtitle);
       const subtitle = res.data.replace('WEBVTT', '').trim() + '\n';
       writeFileSync(this.subtitleFile(download.id), subtitle);
       console.log('Subtitle downloaded:', this.subtitleFile(download.id));
     }
-    // Start download process
-    return new Promise<ChildProcess>((resolve: (value: ChildProcess) => void, reject: (exception: ExecException) => void) => {
-      const dlCommand: string = `${DownloadService.dlScript()} "${this.itemFile(download.id)}" "${this.logFile(download.id)}" "${video}" "${audio ? audio : ''}"`;
-      const process = exec(dlCommand, (error) => {
+
+    // Create download command
+    const dlScript: string = DownloadService.dlScript()!;
+    const dlArgs: string[] = [
+      this.itemFile(download.id),
+      this.logFile(download.id),
+      video,
+      audio ? audio : ''
+    ];
+    const dlCommand: string = [dlScript, ...dlArgs].join(' ');
+
+    // Create download executor
+    const dlExecutor = (resolve: (value: ChildProcess) => void, reject: (exception: ExecException) => void): void => {
+      const process: ChildProcess = exec(dlCommand, (error: ExecException | null) => {
         if (error) {
           reject(error);
           return;
         }
         resolve(process);
       });
-    });
+    };
+
+    // Start download process
+    return new Promise<ChildProcess>(dlExecutor);
   }
 
 }

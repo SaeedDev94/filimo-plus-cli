@@ -5,6 +5,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { AuthService } from './Auth/AuthService';
 import { ClientService } from './Client/ClientService';
+import { IDownloadTrack, IDownloadVariant } from './Dom/DomInterface';
 import { DomService } from './Dom/DomService';
 import { DownloadService } from './Download/DownloadService';
 import { ReadlineService } from './Readline/ReadlineService';
@@ -14,10 +15,10 @@ class App {
   constructor(
     private absolutePath: string
   ) {
-    this.packageJson = JSON.parse(readFileSync(join(this.absolutePath, 'package.json')).toString());
+    this.package = JSON.parse(readFileSync(join(this.absolutePath, 'package.json')).toString());
   }
 
-  private packageJson: {
+  private package: {
     name: string,
     version: string,
     author: {
@@ -60,11 +61,11 @@ class App {
   }
 
   private printVersion(): void {
-    console.log(`${this.packageJson.name} v${this.packageJson.version}`);
+    console.log(`${this.package.name} v${this.package.version}`);
   }
 
   private printAuthor(): void {
-    console.log(`Author: ${this.packageJson.author.name}`);
+    console.log(`Author: ${this.package.author.name}`);
   }
 
   private async download(itemId?: string): Promise<void> {
@@ -79,10 +80,7 @@ class App {
     if (!authToken) {
       console.log("You don't have auth token");
       const token = await ReadlineService.question('Enter auth token:');
-      if (!token) {
-        console.error('No token!');
-        return;
-      }
+      if (!token) throw new Error('No token!');
       authToken = token;
       clientService.setToken(authToken);
       authService.saveToken(authToken);
@@ -92,51 +90,63 @@ class App {
 
     console.log('Check auth token ...');
     const userName = await domService.getUserName();
-    if (!userName) {
-      console.error('Invalid auth token');
-      console.log('Deleting auth token ...');
+    if (userName) {
+      console.log(`UserName: ${userName}`);
+    } else {
       authService.deleteToken();
-      console.log('Auth token deleted');
-      console.log('Please try again!');
-      return;
+      throw new Error('Invalid auth token');
     }
-    console.log(`UserName: ${userName}`);
 
     if (!id) id = await ReadlineService.question('Enter id:');
+    if (!id) throw new Error(`Invalid id: "${id}"`);
     console.log(`Getting "${id}" info ...`);
     const download = await domService.getDownload(id);
     console.log(`Name: "${download.name}"`);
 
-    let selectedVariant: string = '';
-    if (download.variants.length === 1) selectedVariant = download.variants[0].link;
+    let variants: IDownloadVariant[] = [];
+    if (download.variants.length === 1) variants = download.variants;
     if (download.variants.length >= 2) {
-      const variant: string = await ReadlineService.question(
-        'Select a variant:',
+      const selectedVariants: string = await ReadlineService.question(
+        'Select variants: [comma separated]',
         download.variants.map((item) => `${item.resolution} - ${item.quality}`)
       );
-      selectedVariant = download.variants[Number(variant) - 1].link;
+      selectedVariants.split(',').forEach((selected: string) => {
+        const index: number = Number(selected) - 1;
+        if (Number.isNaN(index) || !download.variants[index]) throw new Error(`Invalid variant: "${selected}"`);
+        variants.push(download.variants[index]);
+      });
     }
 
-    let selectedTrack: string | null = null;
-    if (download.tracks.length === 1) selectedTrack = download.tracks[0].link;
+    let track: IDownloadTrack | undefined = undefined;
+    if (download.tracks.length === 1) track = download.tracks[0];
     if (download.tracks.length >= 2) {
-      const track: string = await ReadlineService.question(
+      const selected: string = await ReadlineService.question(
         'Select an audio track:',
         download.tracks.map((item) => item.language)
       );
-      selectedTrack = download.tracks[Number(track) - 1].link;
+      const index: number = Number(selected) - 1;
+      if (Number.isNaN(index) || !download.tracks[index]) throw new Error(`Invalid track: "${selected}"`);
+      track = download.tracks[index];
     }
 
-    const downloadService = new DownloadService(clientService);
-    console.log('Starting download ...');
-
-    try {
-      await downloadService.start(download, selectedVariant, selectedTrack);
-      console.log('Download started:');
-      await this.watch(downloadService, download.id);
-    } catch (exception) {
-      console.error('Oops!', exception);
+    for (let i = 0 ; i < variants.length ; i++) {
+      const variant: IDownloadVariant = variants[i];
+      const downloadService = new DownloadService(clientService, variant.quality);
+      console.log(`[${variant.quality}]`);
+      console.log('Starting download ...');
+      try {
+        await downloadService.start(download, variant.link, track?.link);
+        console.log('Download started:');
+        await this.watch(downloadService, download.id);
+      } catch (exception) {
+        console.error('Oops!', exception);
+        throw new Error('Somethings went wrong!');
+      }
     }
+
+    console.log("\nDon't upload downloaded item(s) for public access");
+    console.log('Use it for yourself only');
+    console.log('Thanks!');
   }
 
   private async watch(downloadService: DownloadService, id: string): Promise<void> {
@@ -153,12 +163,9 @@ class App {
         return;
       }
     }
-    process.stdout.write('\n');
 
+    process.stdout.write('\n');
     console.log(`Item downloaded: ${downloadService.itemFile(id)}`);
-    console.log("Don't upload this file for public access");
-    console.log('Use it for yourself only');
-    console.log('Thanks!');
   }
 
 }
