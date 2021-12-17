@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, rmSync, writeFileSync } from 'fs';
 import { join } from 'path';
-import { absolutePath } from '../App';
+import { absolutePath } from '../FilimoPlusCli';
 
 export class AuthService {
 

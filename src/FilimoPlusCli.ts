@@ -10,7 +10,7 @@ import { DomService } from './Dom/DomService';
 import { DownloadService } from './Download/DownloadService';
 import { ReadlineService } from './Readline/ReadlineService';
 
-class App {
+class FilimoPlusCli {
 
   constructor(
     private absolutePath: string
@@ -171,6 +171,6 @@ class App {
 }
 
 const absolutePath: string = join(__dirname, '..');
-new App(absolutePath).main(process.argv.slice(2));
+new FilimoPlusCli(absolutePath).main(process.argv.slice(2));
 
 export { absolutePath };

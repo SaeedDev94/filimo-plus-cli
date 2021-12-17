@@ -3,7 +3,7 @@ import { closeSync, existsSync, mkdirSync, openSync, readFileSync, writeFileSync
 import { join } from 'path';
 import { ClientService } from '../Client/ClientService';
 import { IDownload } from '../Dom/DomInterface';
-import { absolutePath } from '../App';
+import { absolutePath } from '../FilimoPlusCli';
 
 export class DownloadService {
 
