@@ -1,6 +1,7 @@
 import { ChildProcess, exec, ExecException } from 'child_process';
 import { closeSync, existsSync, mkdirSync, openSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
+import { AuthService } from '../Auth/AuthService';
 import { ClientService } from '../Client/ClientService';
 import { IDownload } from '../Dom/DomInterface';
 import { absolutePath } from '../FilimoPlusCli';
@@ -8,6 +9,7 @@ import { absolutePath } from '../FilimoPlusCli';
 export class DownloadService {
 
   constructor(
+    private authService: AuthService,
     private clientService: ClientService,
     private quality: string
   ) {
@@ -83,7 +85,7 @@ export class DownloadService {
     return join(this.downloadDir(id), `${id}.mp4`);
   }
 
-  async start(download: IDownload, video: string, audio?: string): Promise<ChildProcess> {
+  async start(download: IDownload, video: string, audio?: string): Promise<ChildProcess | null> {
     // Create movie dir
     if (!existsSync(this.movieDir())) mkdirSync(this.movieDir());
 
@@ -108,27 +110,31 @@ export class DownloadService {
 
     // Create download command
     const dlScript: string = DownloadService.dlScript()!;
-    const dlArgs: string[] = [
-      this.itemFile(download.id),
-      this.logFile(download.id),
-      video,
-      audio ? audio : ''
-    ];
-    const dlCommand: string = [dlScript, ...dlArgs].join(' ');
+    const headers: string = `User-Agent: ${this.authService.getUserAgent()}`;
+    const itemFile: string = this.itemFile(download.id);
+    const logFile: string = this.logFile(download.id);
+    const dlCommand: string = `${dlScript} "${headers}" "${itemFile}" "${logFile}" "${video}" "${audio ? audio : ''}"`;
 
     // Create download executor
-    const dlExecutor = (resolve: (value: ChildProcess) => void, reject: (exception: ExecException) => void): void => {
-      const process: ChildProcess = exec(dlCommand, (error: ExecException | null) => {
-        if (error) {
-          reject(error);
-          return;
-        }
-        resolve(process);
-      });
+    const platform = process.platform;
+    const dlExecutor = (resolve: (value: ChildProcess | null) => void, reject: (exception: ExecException) => void): void => {
+      if (platform === 'linux') {
+        const process: ChildProcess = exec(dlCommand, (error: ExecException | null) => {
+          if (error) {
+            reject(error);
+            return;
+          }
+          resolve(process);
+        });
+      }
+      if (platform === 'win32') {
+        exec(dlCommand);
+        resolve(null);
+      }
     };
 
     // Start download process
-    return new Promise<ChildProcess>(dlExecutor);
+    return new Promise<ChildProcess | null>(dlExecutor);
   }
 
 }
