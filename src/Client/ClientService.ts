@@ -3,10 +3,7 @@ import {
   OutgoingHttpHeaders,
   IncomingMessage
 } from 'http';
-import {
-  request,
-  RequestOptions
-} from 'https';
+import { request } from 'https';
 import { IHttpResponse } from './ClientInterface';
 
 export class ClientService {
@@ -21,21 +18,16 @@ export class ClientService {
     this.authToken = value;
   }
 
-  sendRequest(url: string, argOptions: RequestOptions = {}, data: any = null): Promise<IHttpResponse> {
+  sendRequest(url: string, method: string = 'GET', data: any = null): Promise<IHttpResponse> {
     const reqExecutor = (resolve: (value: IHttpResponse) => void, reject: (value: IHttpResponse) => void): void => {
 
-      const headers: OutgoingHttpHeaders = {
-        'user-agent': this.userAgent
-      };
-      if (this.authToken) headers['cookie'] = `AuthV1=${this.authToken};`;
+      const headers: OutgoingHttpHeaders = { 'User-Agent': this.userAgent };
+      if (this.authToken) headers['Cookie'] = `AuthV1=${this.authToken}`;
 
-      const defaultOptions: RequestOptions = {
-        method: 'GET',
+      const clientRequest: ClientRequest = request(url, {
+        method,
         headers
-      };
-      const options: RequestOptions = Object.assign<RequestOptions, RequestOptions>(defaultOptions, argOptions);
-
-      const clientRequest: ClientRequest = request(url, options);
+      });
 
       clientRequest.on('response', (response: IncomingMessage) => {
         const chunks: Buffer[] = [];
