@@ -1,4 +1,4 @@
-import { ChildProcess, exec, ExecException } from 'child_process';
+import { ChildProcess, exec } from 'child_process';
 import { closeSync, existsSync, mkdirSync, openSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { AuthService } from '../Auth/AuthService';
@@ -85,7 +85,7 @@ export class DownloadService {
     return join(this.downloadDir(id), `${id}.mp4`);
   }
 
-  async start(download: IDownload, video: string, audio?: string): Promise<ChildProcess | null> {
+  async start(download: IDownload, video: string, audio?: string): Promise<ChildProcess> {
     // Create movie dir
     if (!existsSync(this.movieDir())) mkdirSync(this.movieDir());
 
@@ -115,26 +115,8 @@ export class DownloadService {
     const logFile: string = this.logFile(download.id);
     const dlCommand: string = `${dlScript} "${headers}" "${itemFile}" "${logFile}" "${video}" "${audio ? audio : ''}"`;
 
-    // Create download executor
-    const platform = process.platform;
-    const dlExecutor = (resolve: (value: ChildProcess | null) => void, reject: (exception: ExecException) => void): void => {
-      if (platform === 'linux') {
-        const process: ChildProcess = exec(dlCommand, (error: ExecException | null) => {
-          if (error) {
-            reject(error);
-            return;
-          }
-          resolve(process);
-        });
-      }
-      if (platform === 'win32') {
-        exec(dlCommand);
-        resolve(null);
-      }
-    };
-
     // Start download process
-    return new Promise<ChildProcess | null>(dlExecutor);
+    return exec(dlCommand);
   }
 
 }
