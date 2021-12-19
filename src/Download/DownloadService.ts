@@ -110,7 +110,7 @@ export class DownloadService {
 
     // Create download command
     const dlScript: string = DownloadService.dlScript()!;
-    const headers: string = `User-Agent: ${this.authService.getUserAgent()}`;
+    const headers: string = `User-Agent: ${this.authService.getUserAgent()}; Cookie: AuthV1=${this.authService.getToken()};`;
     const itemFile: string = this.itemFile(download.id);
     const logFile: string = this.logFile(download.id);
     const dlCommand: string = `${dlScript} "${headers}" "${itemFile}" "${logFile}" "${video}" "${audio ? audio : ''}"`;
