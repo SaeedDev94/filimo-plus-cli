@@ -73,7 +73,7 @@ class FilimoPlusCli {
 
     const authService = new AuthService();
     const userAgent: string = authService.getUserAgent();
-    let authToken: string | null = authService.getToken();
+    const authToken: string | null = authService.getToken();
 
     const clientService = new ClientService(userAgent, authToken);
 
@@ -81,9 +81,8 @@ class FilimoPlusCli {
       console.log("You don't have auth token");
       const token = await ReadlineService.question('Enter auth token:');
       if (!token) throw new Error('No token!');
-      authToken = token;
-      clientService.setToken(authToken);
-      authService.saveToken(authToken);
+      clientService.setToken(token);
+      authService.saveToken(token);
     }
 
     const domService = new DomService(clientService);
