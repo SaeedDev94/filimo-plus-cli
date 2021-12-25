@@ -4,25 +4,24 @@ import {
   IncomingMessage
 } from 'http';
 import { request } from 'https';
+import { AuthService } from '../Auth/AuthService';
 import { IHttpResponse } from './ClientInterface';
 
 export class ClientService {
 
   constructor(
-    private userAgent: string,
-    private authToken: string | null
+    private authService: AuthService
   ) {
-  }
-
-  setToken(value: string): void {
-    this.authToken = value;
   }
 
   sendRequest(url: string, method: string = 'GET', data: any = null): Promise<IHttpResponse> {
     const reqExecutor = (resolve: (value: IHttpResponse) => void, reject: (value: IHttpResponse) => void): void => {
 
-      const headers: OutgoingHttpHeaders = { 'User-Agent': this.userAgent };
-      if (this.authToken) headers['Cookie'] = `AuthV1=${this.authToken}`;
+      const userAgent: string = this.authService.getUserAgent();
+      const authToken: string | null = this.authService.getToken();
+
+      const headers: OutgoingHttpHeaders = { 'User-Agent': userAgent };
+      if (authToken) headers['Cookie'] = `AuthV1=${authToken}`;
 
       const clientRequest: ClientRequest = request(url, {
         method,

@@ -71,21 +71,16 @@ class FilimoPlusCli {
   private async download(itemId?: string): Promise<void> {
     let id: string | undefined = itemId;
 
-    const authService = new AuthService();
-    const userAgent: string = authService.getUserAgent();
-    const authToken: string | null = authService.getToken();
+    const authService: AuthService = new AuthService();
+    const clientService: ClientService = new ClientService(authService);
+    const domService: DomService = new DomService(clientService);
 
-    const clientService = new ClientService(userAgent, authToken);
-
-    if (!authToken) {
+    if (!authService.getToken()) {
       console.log("You don't have auth token");
       const token = await ReadlineService.question('Enter auth token:');
       if (!token) throw new Error('No token!');
-      clientService.setToken(token);
       authService.saveToken(token);
     }
-
-    const domService = new DomService(clientService);
 
     console.log('Check auth token ...');
     const userName = await domService.getUserName();
@@ -98,6 +93,7 @@ class FilimoPlusCli {
 
     if (!id) id = await ReadlineService.question('Enter id:');
     if (!id) throw new Error(`Invalid id: "${id}"`);
+
     console.log(`Getting "${id}" info ...`);
     const download = await domService.getDownload(id);
     console.log(`Name: "${download.name}"`);
@@ -130,7 +126,7 @@ class FilimoPlusCli {
 
     for (let i = 0 ; i < variants.length ; i++) {
       const variant: IDownloadVariant = variants[i];
-      const downloadService = new DownloadService(authService, clientService, variant.quality);
+      const downloadService: DownloadService = new DownloadService(authService, clientService, variant.quality);
       console.log(`[${variant.quality}]`);
       console.log('Starting download ...');
       try {
