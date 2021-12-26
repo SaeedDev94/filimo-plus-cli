@@ -99,11 +99,15 @@ class FilimoPlusCli {
     console.log(`Name: "${download.name}"`);
 
     let variants: IDownloadVariant[] = [];
-    if (download.variants.length === 1) variants = download.variants;
+    const variantOptions: string[] = download.variants.map((item) => `${item.resolution} - ${item.quality}`);
+    if (download.variants.length === 1) {
+      variants = download.variants;
+      console.log(`Select "${variantOptions[0]}" quality variant by default`);
+    }
     if (download.variants.length >= 2) {
       const selectedVariants: string = await ReadlineService.question(
         'Select variants: [comma separated]',
-        download.variants.map((item) => `${item.resolution} - ${item.quality}`)
+        variantOptions
       );
       selectedVariants.split(',').forEach((selected: string) => {
         const index: number = Number(selected) - 1;
@@ -113,11 +117,15 @@ class FilimoPlusCli {
     }
 
     let track: IDownloadTrack | undefined = undefined;
-    if (download.tracks.length === 1) track = download.tracks[0];
+    const trackOptions: string[] = download.tracks.map((item) => item.language.toUpperCase());
+    if (download.tracks.length === 1) {
+      track = download.tracks[0];
+      console.log(`Select "${trackOptions[0]}" audio track by default`);
+    }
     if (download.tracks.length >= 2) {
       const selected: string = await ReadlineService.question(
         'Select an audio track:',
-        download.tracks.map((item) => item.language)
+        trackOptions
       );
       const index: number = Number(selected) - 1;
       if (Number.isNaN(index) || !download.tracks[index]) throw new Error(`Invalid track: "${selected}"`);
