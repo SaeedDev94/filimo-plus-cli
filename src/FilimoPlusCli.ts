@@ -5,7 +5,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { AuthService } from './Auth/AuthService';
 import { ClientService } from './Client/ClientService';
-import { IDownloadTrack, IDownloadVariant } from './Dom/DomInterface';
+import { IDownload, IDownloadTrack, IDownloadVariant } from './Dom/DomInterface';
 import { DomService } from './Dom/DomService';
 import { DownloadService } from './Download/DownloadService';
 import { ReadlineService } from './Readline/ReadlineService';
@@ -92,11 +92,16 @@ class FilimoPlusCli {
     }
 
     if (!id) id = await ReadlineService.question('Enter id:');
-    if (!id) throw new Error(`Invalid id: "${id}"`);
+    if (!id) throw new Error('No id!');
 
-    console.log(`Getting "${id}" info ...`);
-    const download = await domService.getDownload(id);
-    console.log(`Name: "${download.name}"`);
+    let download: IDownload;
+    try {
+      console.log(`Getting "${id}" info ...`);
+      download = await domService.getDownload(id);
+      console.log(`Name: "${download.name}"`);
+    } catch (res: any) {
+      throw new Error(`Invalid id: "${id}", statusCode: "${res?.statusCode}"`);
+    }
 
     let variants: IDownloadVariant[] = [];
     const variantOptions: string[] = download.variants.map((item) => `${item.resolution} - ${item.quality}`);
