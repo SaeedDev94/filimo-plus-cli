@@ -103,6 +103,10 @@ class FilimoPlusCli {
       throw new Error(`Invalid id: "${id}", statusCode: "${res?.statusCode}"`);
     }
 
+    if (!download.variants.length) {
+      throw new Error('No quality variant found!');
+    }
+
     let variants: IDownloadVariant[] = [];
     const variantOptions: string[] = download.variants.map((item) => `${item.resolution} - ${item.quality}`);
     if (download.variants.length === 1) {
