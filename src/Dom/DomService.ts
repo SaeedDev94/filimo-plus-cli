@@ -1,5 +1,5 @@
 import { ClientService } from '../Client/ClientService';
-import { IDownload, IDownloadTrack, IDownloadVariant } from './DomInterface';
+import { IDownload, IDownloadSubtitle, IDownloadTrack, IDownloadVariant } from './DomInterface';
 
 export class DomService {
 
@@ -63,11 +63,12 @@ export class DomService {
       }
     });
 
-    let subtitle: string | null = null;
+    const subtitles: IDownloadSubtitle[] = [];
     (playerData.tracks || []).forEach((track: any) => {
-      if (!subtitle && track.srclang === 'fa') {
-        subtitle = track.src;
-      }
+      subtitles.push({
+        language: track.srclang.toLowerCase(),
+        link: track.src
+      });
     });
 
     return {
@@ -75,7 +76,7 @@ export class DomService {
       name,
       variants,
       tracks,
-      subtitle
+      subtitles
     };
   }
 

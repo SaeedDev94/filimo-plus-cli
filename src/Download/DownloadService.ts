@@ -77,8 +77,10 @@ export class DownloadService {
     return join(this.downloadDir(id), `${id}.log`);
   }
 
-  subtitleFile(id: string): string {
-    return join(this.downloadDir(id), `${id}.srt`);
+  subtitleFile(id: string, language: string): string {
+    let name: string = id;
+    if (language !== 'fa') name += `_${language}`;
+    return join(this.downloadDir(id), `${name}.srt`);
   }
 
   itemFile(id: string): string {
@@ -99,13 +101,14 @@ export class DownloadService {
     // Create log file
     closeSync(openSync(this.logFile(download.id), 'w'));
 
-    // Download subtitle
-    if (download.subtitle) {
-      console.log('Downloading the subtitle ...');
-      const data = await this.clientService.sendRequest(download.subtitle);
-      const subtitle = data.responseBody.toString().replace('WEBVTT', '').trim() + '\n';
-      writeFileSync(this.subtitleFile(download.id), subtitle);
-      console.log('Subtitle downloaded:', this.subtitleFile(download.id));
+    // Download subtitles
+    for (let i = 0 ; i < download.subtitles.length ; i++) {
+      const subtitle = download.subtitles[i];
+      console.log(`Subtitle [${subtitle.language.toUpperCase()}]`);
+      const data = await this.clientService.sendRequest(subtitle.link);
+      const txt = data.responseBody.toString().replace('WEBVTT', '').trim() + '\n';
+      writeFileSync(this.subtitleFile(download.id, subtitle.language), txt);
+      console.log('Subtitle downloaded:', this.subtitleFile(download.id, subtitle.language));
     }
 
     // Create download command

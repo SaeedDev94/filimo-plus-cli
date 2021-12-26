@@ -145,10 +145,9 @@ class FilimoPlusCli {
       const variant: IDownloadVariant = variants[i];
       const downloadService: DownloadService = new DownloadService(authService, clientService, variant.quality);
       console.log(`[${variant.quality}]`);
-      console.log('Starting download ...');
       try {
         await downloadService.start(download, variant.link, track?.link);
-        console.log('Download started:');
+        console.log('Downloading:');
         await this.watch(downloadService, download.id);
       } catch (exception) {
         console.error('Oops!', exception);
