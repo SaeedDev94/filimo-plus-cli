@@ -182,6 +182,9 @@ class FilimoPlusCli {
 }
 
 const absolutePath: string = join(__dirname, '..');
-new FilimoPlusCli(absolutePath).main(process.argv.slice(2));
+
+new FilimoPlusCli(absolutePath)
+  .main(process.argv.slice(2))
+  .catch((error: Error) => console.log(error.message));
 
 export { absolutePath };
