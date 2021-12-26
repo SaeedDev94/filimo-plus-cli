@@ -15,7 +15,7 @@ export class DomService {
 
   async getUserName(): Promise<string | undefined> {
     const html: string = await this.getPage('https://www.filimo.com');
-    const username = [...html.matchAll(/<.*profile_name.*>(.*)<\/.*>/g)]
+    const username = [...html.matchAll(/profile_name.*>(.*)</g)]
       .map((i) => i[1])
       .pop();
     return username ? username : undefined;
