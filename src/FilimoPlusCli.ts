@@ -115,12 +115,12 @@ class FilimoPlusCli {
     }
     if (download.variants.length >= 2) {
       const selectedVariants: string = await ReadlineService.question(
-        'Select variants: [comma separated]',
+        'Select quality variants: [comma separated]',
         variantOptions
       );
       selectedVariants.split(',').forEach((selected: string) => {
         const index: number = Number(selected) - 1;
-        if (Number.isNaN(index) || !download.variants[index]) throw new Error(`Invalid variant: "${selected}"`);
+        if (Number.isNaN(index) || !download.variants[index]) throw new Error(`Invalid quality variant: "${selected}"`);
         variants.push(download.variants[index]);
       });
     }
@@ -137,7 +137,7 @@ class FilimoPlusCli {
         trackOptions
       );
       const index: number = Number(selected) - 1;
-      if (Number.isNaN(index) || !download.tracks[index]) throw new Error(`Invalid track: "${selected}"`);
+      if (Number.isNaN(index) || !download.tracks[index]) throw new Error(`Invalid audio track: "${selected}"`);
       track = download.tracks[index];
     }
 
