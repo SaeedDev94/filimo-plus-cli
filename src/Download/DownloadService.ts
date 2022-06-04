@@ -25,15 +25,10 @@ export class DownloadService {
     return seconds;
   }
 
-  private dlScript(): string | null {
-    switch (process.platform) {
-      case 'linux':
-        return `bash ${join(this.absolutePath, 'dl.bash')}`;
-      case 'win32':
-        return join(this.absolutePath, 'dl.bat');
-      default:
-        return null;
-    }
+  private dlScript(): string {
+    return process.platform === 'linux' ?
+      `bash ${join(this.absolutePath, 'dl.bash')}` :
+      join(this.absolutePath, 'dl.bat');
   }
 
   calcDownloadProgress(id: string): number {
@@ -112,7 +107,7 @@ export class DownloadService {
     }
 
     // Create download command
-    const dlScript: string = this.dlScript()!;
+    const dlScript: string = this.dlScript();
     const headers: string = `User-Agent: ${this.authService.getUserAgent()}; Cookie: AuthV1=${this.authService.getToken()};`;
     const itemFile: string = this.itemFile(download.id);
     const logFile: string = this.logFile(download.id);
