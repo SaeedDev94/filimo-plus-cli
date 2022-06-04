@@ -4,29 +4,18 @@ import { join } from 'path';
 import { AuthService } from '../Auth/AuthService';
 import { ClientService } from '../Client/ClientService';
 import { IDownload } from '../Dom/DomInterface';
-import { absolutePath } from '../FilimoPlusCli';
 
 export class DownloadService {
 
   constructor(
     private authService: AuthService,
     private clientService: ClientService,
-    private quality: string
+    private quality: string,
+    private absolutePath: string
   ) {
   }
 
-  private static dlScript(): string | null {
-    switch (process.platform) {
-      case 'linux':
-        return `bash ${join(absolutePath, 'dl.bash')}`;
-      case 'win32':
-        return join(absolutePath, 'dl.bat');
-      default:
-        return null;
-    }
-  }
-
-  private static strTimeToSeconds(time: string): number {
+  private strTimeToSeconds = (time: string): number => {
     const timeParts = time.split(':');
     const nextPart = (): number => Number(timeParts.pop()) || 0;
     let seconds = 0;
@@ -34,6 +23,17 @@ export class DownloadService {
     seconds += nextPart() * 60; // m
     seconds += nextPart() * 60 * 60; // h
     return seconds;
+  }
+
+  private dlScript(): string | null {
+    switch (process.platform) {
+      case 'linux':
+        return `bash ${join(this.absolutePath, 'dl.bash')}`;
+      case 'win32':
+        return join(this.absolutePath, 'dl.bat');
+      default:
+        return null;
+    }
   }
 
   calcDownloadProgress(id: string): number {
@@ -44,7 +44,7 @@ export class DownloadService {
       .map((i) => i[1])
       .pop();
     if (strTotalDuration) {
-      totalDuration = DownloadService.strTimeToSeconds(strTotalDuration);
+      totalDuration = this.strTimeToSeconds(strTotalDuration);
     }
 
     let currentTime = 0;
@@ -52,7 +52,7 @@ export class DownloadService {
       .map((i) => i[1])
       .pop();
     if (strCurrentTime) {
-      currentTime = DownloadService.strTimeToSeconds(strCurrentTime);
+      currentTime = this.strTimeToSeconds(strCurrentTime);
     }
 
     const floatProgress = (currentTime / (totalDuration ? totalDuration : 1)) * 100;
@@ -62,7 +62,7 @@ export class DownloadService {
   }
 
   movieDir(): string {
-    return join(absolutePath, 'movie');
+    return join(this.absolutePath, 'movie');
   }
 
   downloadDir(id: string): string {
@@ -112,7 +112,7 @@ export class DownloadService {
     }
 
     // Create download command
-    const dlScript: string = DownloadService.dlScript()!;
+    const dlScript: string = this.dlScript()!;
     const headers: string = `User-Agent: ${this.authService.getUserAgent()}; Cookie: AuthV1=${this.authService.getToken()};`;
     const itemFile: string = this.itemFile(download.id);
     const logFile: string = this.logFile(download.id);

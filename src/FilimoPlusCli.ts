@@ -71,7 +71,7 @@ class FilimoPlusCli {
   private async download(itemId?: string): Promise<void> {
     let id: string | undefined = itemId;
 
-    const authService: AuthService = new AuthService();
+    const authService: AuthService = new AuthService(this.absolutePath);
     const clientService: ClientService = new ClientService(authService);
     const domService: DomService = new DomService(clientService);
 
@@ -143,7 +143,7 @@ class FilimoPlusCli {
 
     for (let i = 0 ; i < variants.length ; i++) {
       const variant: IDownloadVariant = variants[i];
-      const downloadService: DownloadService = new DownloadService(authService, clientService, variant.quality);
+      const downloadService: DownloadService = new DownloadService(authService, clientService, variant.quality, this.absolutePath);
       console.log(`[${variant.quality}]`);
       try {
         await downloadService.start(download, variant.link, track?.link);
@@ -181,10 +181,6 @@ class FilimoPlusCli {
 
 }
 
-const absolutePath: string = join(__dirname, '..');
-
-new FilimoPlusCli(absolutePath)
+new FilimoPlusCli(join(__dirname, '..'))
   .main(process.argv.slice(2))
   .catch((error: Error) => console.log(error.message));
-
-export { absolutePath };

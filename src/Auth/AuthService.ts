@@ -1,10 +1,9 @@
 import { existsSync, readFileSync, rmSync, writeFileSync } from 'fs';
 import { join } from 'path';
-import { absolutePath } from '../FilimoPlusCli';
 
 export class AuthService {
 
-  constructor() {
+  constructor(absolutePath: string) {
     this.tokenFilePath = join(absolutePath, 'token');
   }
 
