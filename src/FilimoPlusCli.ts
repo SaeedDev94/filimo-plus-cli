@@ -175,6 +175,8 @@ class FilimoPlusCli {
       }
     }
 
+    await sleep(1000);
+
     process.stdout.write('\n');
     console.log(`Item downloaded: ${downloadService.itemFile(id)}`);
   }
