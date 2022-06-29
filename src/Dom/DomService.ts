@@ -29,7 +29,14 @@ export class DomService {
       name = titleMatches[1].trim();
     }
 
-    const strObj = [...html.matchAll(/var player_data=(.*);if/g)].map((i) => i[1]).pop();
+    let lines: string[] = html.split('\n');
+    const startScriptIndex: number = lines.findIndex((line: string) => line.includes('var player_data'));
+    lines = lines.slice(startScriptIndex, lines.length);
+    const endScriptIndex: number = lines.findIndex((line: string) => line.includes('</script>'));
+    lines = lines.slice(0, endScriptIndex + 1);
+    const script: string = lines.join('').replaceAll('\r', '');
+
+    const strObj = [...script.matchAll(/var player_data=(.*?);/g)].map((i) => i[1]).pop();
     const playerData = JSON.parse(strObj!);
 
     let playlistUrl = '';
@@ -45,7 +52,7 @@ export class DomService {
     const playlist = await this.getPage(playlistUrl);
 
     const variants: IDownloadVariant[] = [
-      ...playlist.matchAll(/#([0-9]+(.*?))\n(.*)RESOLUTION=(.*)\n(.*)/g),
+      ...playlist.matchAll(/#(\d+(.*?))\n(.*)RESOLUTION=(.*)\n(.*)/g),
     ].map((variant) => {
       return {
         quality: variant[1] || '',
