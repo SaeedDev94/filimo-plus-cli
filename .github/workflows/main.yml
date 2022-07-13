@@ -22,12 +22,10 @@ jobs:
     
     # Setup Java environment in order to build the Android app.
     - uses: actions/checkout@v3.0.2
-    - uses: actions/setup-java@v3.4.0
-      with:
-        java-version: 11
-        distribution: temurin
     
+    - run: sudo apt install ffmpeg
     - run: npm install
     - run: npm run build:linux
     - run: npm link
-    - run: filimo-plus-cli {{ github.event.inputs.id }}
+    - run: ${{ secrets.TOKEN }} >> token
+    - run: filimo-plus-cli ${{ github.event.inputs.id }}
