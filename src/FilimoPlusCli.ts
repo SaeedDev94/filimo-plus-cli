@@ -132,10 +132,7 @@ class FilimoPlusCli {
       console.log(`Select "${trackOptions[0]}" audio track by default`);
     }
     if (download.tracks.length >= 2) {
-      const selected: string = await ReadlineService.question(
-        'Select an audio track:',
-        trackOptions
-      );
+      const selected: string = '1';
       const index: number = Number(selected) - 1;
       if (Number.isNaN(index) || !download.tracks[index]) throw new Error(`Invalid audio track: "${selected}"`);
       track = download.tracks[index];
