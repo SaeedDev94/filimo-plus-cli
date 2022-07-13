@@ -162,9 +162,9 @@ class FilimoPlusCli {
     const progress: number = downloadService.calcDownloadProgress(id);
 
     if (progress <= 100) {
-      process.stdout.clearLine(0);
-      process.stdout.cursorTo(0);
-      process.stdout.write(`${progress}%`);
+      //process.stdout.clearLine(0);
+      //process.stdout.cursorTo(0);
+      //process.stdout.write(`${progress}%`);
       if (progress !== 100) {
         await sleep(1000);
         await this.watch(downloadService, id);
