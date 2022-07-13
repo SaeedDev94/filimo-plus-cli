@@ -125,17 +125,11 @@ class FilimoPlusCli {
       });
     }
 
-    let track: IDownloadTrack | undefined = undefined;
+    //let track: IDownloadTrack | undefined = undefined;
+    let track: IDownloadTrack[] | undefined = undefined;
     const trackOptions: string[] = download.tracks.map((item) => item.language.toUpperCase());
-    if (download.tracks.length === 1) {
-      track = download.tracks[0];
-      console.log(`Select "${trackOptions[0]}" audio track by default`);
-    }
-    if (download.tracks.length >= 2) {
-      const selected: string = '1';
-      const index: number = Number(selected) - 1;
-      if (Number.isNaN(index) || !download.tracks[index]) throw new Error(`Invalid audio track: "${selected}"`);
-      track = download.tracks[index];
+    for (let i = 0 ; i < download.tracks.length ; i++) {
+      track.push(download.tracks[i]);
     }
 
     for (let i = 0 ; i < variants.length ; i++) {
@@ -143,7 +137,7 @@ class FilimoPlusCli {
       const downloadService: DownloadService = new DownloadService(authService, clientService, variant.quality, this.absolutePath);
       console.log(`[${variant.quality}]`);
       try {
-        await downloadService.start(download, variant.link, track?.link);
+        await downloadService.start(download, variant.link, track);
         console.log('Downloading:');
         await this.watch(downloadService, download.id);
       } catch (exception) {
