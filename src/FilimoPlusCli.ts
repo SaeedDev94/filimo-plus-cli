@@ -125,8 +125,7 @@ class FilimoPlusCli {
       });
     }
 
-    //let track: IDownloadTrack | undefined = undefined;
-    let track: IDownloadTrack[] | undefined = undefined;
+    let track: IDownloadTrack[] = [];
     const trackOptions: string[] = download.tracks.map((item) => item.language.toUpperCase());
     for (let i = 0 ; i < download.tracks.length ; i++) {
       track.push(download.tracks[i]);
