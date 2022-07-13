@@ -28,7 +28,7 @@ jobs:
     - run: npm run build:linux
     - run: npm link
     - run: echo "${{ secrets.TOKEN }}" >> token
-    - run: printf '4\r\n1\r\n1\r\n' | filimo-plus-cli ${{ github.event.inputs.id }}
+    - run: printf '4\r1\r' | filimo-plus-cli ${{ github.event.inputs.id }}
     - run: ls
     - uses: appleboy/telegram-action@master
       with:
