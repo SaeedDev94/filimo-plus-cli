@@ -28,4 +28,4 @@ jobs:
     - run: npm run build:linux
     - run: npm link
     - run: echo "${{ secrets.TOKEN }}" >> token
-    - run: filimo-plus-cli ${{ github.event.inputs.id }}
+    - run: printf '4\n1\n' | filimo-plus-cli ${{ github.event.inputs.id }}
