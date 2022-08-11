@@ -1,5 +1,7 @@
 import { ClientService } from '../Client/ClientService';
 import { IDownload, IDownloadSubtitle, IDownloadTrack, IDownloadVariant } from './DomInterface';
+import { specialChars } from './SpecialChars';
+import { specialSymbols } from './SpecialSymbols';
 
 export class DomService {
 
@@ -22,6 +24,8 @@ export class DomService {
   }
 
   async getDownload(id: string): Promise<IDownload> {
+    const toRemove: string[] = ['\r', '&zwnj;', ...specialChars, ...specialSymbols];
+
     let name = '';
     const html: string = await this.getPage(`https://www.filimo.com/w/${id}`);
     const titleMatches = html.match(/<title[^>]*>([^<]+)<\/title>/);
@@ -34,7 +38,8 @@ export class DomService {
     lines = lines.slice(startScriptIndex, lines.length);
     const endScriptIndex: number = lines.findIndex((line: string) => line.includes('</script>'));
     lines = lines.slice(0, endScriptIndex + 1);
-    const script: string = lines.join('').replaceAll('\r', '');
+    let script: string = lines.join('');
+    toRemove.forEach(rm => script = script.replaceAll(rm, ''));
 
     const strObj = [...script.matchAll(/var player_data=(.*?);/g)].map((i) => i[1]).pop();
     const playerData = JSON.parse(strObj!);
