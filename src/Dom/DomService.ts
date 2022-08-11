@@ -1,5 +1,6 @@
 import { ClientService } from '../Client/ClientService';
 import { IDownload, IDownloadSubtitle, IDownloadTrack, IDownloadVariant } from './DomInterface';
+import { greekChars } from './GreekChars';
 import { specialChars } from './SpecialChars';
 import { specialSymbols } from './SpecialSymbols';
 
@@ -24,7 +25,7 @@ export class DomService {
   }
 
   async getDownload(id: string): Promise<IDownload> {
-    const toRemove: string[] = ['\r', '&zwnj;', ...specialChars, ...specialSymbols];
+    const toRemove: string[] = ['\r', '&zwnj;', ...greekChars, ...specialChars, ...specialSymbols];
 
     let name = '';
     const html: string = await this.getPage(`https://www.filimo.com/w/${id}`);
