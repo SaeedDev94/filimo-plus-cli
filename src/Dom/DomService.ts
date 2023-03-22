@@ -20,6 +20,7 @@ export class DomService {
     const html: string = await this.getPage('https://www.filimo.com');
     const username = [...html.matchAll(/profile_edit_text.*>(.*)</g)]
       .map((i) => i[1])
+      .reverse()
       .pop();
     return username ? username : undefined;
   }
