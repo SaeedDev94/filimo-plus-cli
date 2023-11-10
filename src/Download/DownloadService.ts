@@ -3,7 +3,7 @@ import { closeSync, existsSync, mkdirSync, openSync, readFileSync, writeFileSync
 import { join } from 'path';
 import { AuthService } from '../Auth/AuthService';
 import { ClientService } from '../Client/ClientService';
-import { IDownload } from '../Dom/DomInterface';
+import { IDownload } from '../Data/DataInterface';
 
 export class DownloadService {
 
@@ -11,7 +11,7 @@ export class DownloadService {
     private authService: AuthService,
     private clientService: ClientService,
     private quality: string,
-    private absolutePath: string
+    private absolutePath: string,
   ) {
   }
 

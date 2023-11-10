@@ -1,7 +1,5 @@
 # FilimoPlusCli
 
-![Image](filimo-plus-cli.png)
-
 ### About
 
 With this app you can **download** filimo items!

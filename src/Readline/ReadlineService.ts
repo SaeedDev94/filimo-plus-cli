@@ -11,7 +11,7 @@ export class ReadlineService {
 
       const readline: Interface = createInterface({
         input: process.stdin,
-        output: process.stdout
+        output: process.stdout,
       });
 
       readline.question(label, (answer: string) => {

@@ -1,3 +1,8 @@
+export interface IDownloadSubtitle {
+  language: string;
+  link: string;
+}
+
 export interface IDownloadVariant {
   quality: string;
   resolution: string;
@@ -9,15 +14,14 @@ export interface IDownloadTrack {
   link: string;
 }
 
-export interface IDownloadSubtitle {
-  language: string;
-  link: string;
-}
-
-export interface IDownload {
+export interface IWatch {
   id: string;
   name: string;
+  playlist: string;
+  subtitles: IDownloadSubtitle[];
+}
+
+export interface IDownload extends IWatch {
   variants: IDownloadVariant[];
   tracks: IDownloadTrack[];
-  subtitles: IDownloadSubtitle[];
 }

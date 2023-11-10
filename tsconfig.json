@@ -3,7 +3,7 @@
     "strict": true,
     "rootDir": "src",
     "outDir": "./dist",
-    "target": "ES2021",
+    "target": "ES2022",
     "module": "CommonJS"
   }
 }

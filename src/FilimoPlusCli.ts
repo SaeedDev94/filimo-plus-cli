@@ -5,8 +5,8 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { AuthService } from './Auth/AuthService';
 import { ClientService } from './Client/ClientService';
-import { IDownload, IDownloadTrack, IDownloadVariant } from './Dom/DomInterface';
-import { DomService } from './Dom/DomService';
+import { IDownload, IDownloadTrack, IDownloadVariant } from './Data/DataInterface';
+import { DataService } from './Data/DataService';
 import { DownloadService } from './Download/DownloadService';
 import { ReadlineService } from './Readline/ReadlineService';
 
@@ -73,7 +73,7 @@ class FilimoPlusCli {
 
     const authService: AuthService = new AuthService(this.absolutePath);
     const clientService: ClientService = new ClientService(authService);
-    const domService: DomService = new DomService(clientService);
+    const domService: DataService = new DataService(clientService);
 
     if (!authService.getToken()) {
       console.log("You don't have auth token");
@@ -83,7 +83,7 @@ class FilimoPlusCli {
     }
 
     console.log('Check auth token ...');
-    const userName = await domService.getUserName();
+    const userName = await authService.getUserName();
     if (userName) {
       console.log(`UserName: ${userName}`);
     } else {

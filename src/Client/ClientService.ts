@@ -10,7 +10,7 @@ import { IHttpResponse } from './ClientInterface';
 export class ClientService {
 
   constructor(
-    private authService: AuthService
+    private authService: AuthService,
   ) {
   }
 
@@ -21,7 +21,7 @@ export class ClientService {
       const authToken: string | null = this.authService.getToken();
 
       const headers: OutgoingHttpHeaders = { 'User-Agent': userAgent };
-      if (authToken) headers['Cookie'] = `AuthV1=${authToken}`;
+      if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
 
       const clientRequest: ClientRequest = request(url, {
         method,
