@@ -10,8 +10,9 @@ export class DownloadService {
   constructor(
     private authService: AuthService,
     private clientService: ClientService,
-    private quality: string,
     private absolutePath: string,
+    private quality: string,
+    private language?: string,
   ) {
   }
 
@@ -61,7 +62,7 @@ export class DownloadService {
   }
 
   downloadDir(id: string): string {
-    return join(this.movieDir(), id, this.quality);
+    return join(this.movieDir(), id);
   }
 
   infoFile(id: string): string {
@@ -73,13 +74,12 @@ export class DownloadService {
   }
 
   subtitleFile(id: string, language: string): string {
-    let name: string = id;
-    if (language !== 'fa') name += `_${language}`;
-    return join(this.downloadDir(id), `${name}.srt`);
+    return join(this.downloadDir(id), `${id}_${language}.srt`);
   }
 
   itemFile(id: string): string {
-    return join(this.downloadDir(id), `${id}.mp4`);
+    const name = [id, this.quality, this.language].filter(part => !!part).join('_');
+    return join(this.downloadDir(id), `${name}.mp4`);
   }
 
   async start(download: IDownload, video: string, audio?: string): Promise<ChildProcess> {
@@ -87,11 +87,11 @@ export class DownloadService {
     if (!existsSync(this.movieDir())) mkdirSync(this.movieDir());
 
     // Create download dir
-    if (!existsSync(this.downloadDir(download.id))) mkdirSync(this.downloadDir(download.id), { recursive: true });
+    if (!existsSync(this.downloadDir(download.id))) mkdirSync(this.downloadDir(download.id));
 
     // Create info file
     const info: string = JSON.stringify({ id: download.id, name: download.name });
-    writeFileSync(this.infoFile(download.id), info);
+    if (!existsSync(this.infoFile(download.id))) writeFileSync(this.infoFile(download.id), info);
 
     // Create log file
     closeSync(openSync(this.logFile(download.id), 'w'));
@@ -99,11 +99,13 @@ export class DownloadService {
     // Download subtitles
     for (let i = 0 ; i < download.subtitles.length ; i++) {
       const subtitle = download.subtitles[i];
+      const file = this.subtitleFile(download.id, subtitle.language);
+      if (existsSync(file)) continue;
       console.log(`Subtitle [${subtitle.language.toUpperCase()}]`);
       const data = await this.clientService.sendRequest(subtitle.link);
       const txt = data.responseBody.toString().replace('WEBVTT', '').trim() + '\n';
-      writeFileSync(this.subtitleFile(download.id, subtitle.language), txt);
-      console.log('Subtitle downloaded:', this.subtitleFile(download.id, subtitle.language));
+      writeFileSync(file, txt);
+      console.log('Subtitle downloaded:', file);
     }
 
     // Create download command

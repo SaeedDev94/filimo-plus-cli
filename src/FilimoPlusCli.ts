@@ -152,7 +152,7 @@ class FilimoPlusCli {
 
     for (let i = 0 ; i < variants.length ; i++) {
       const variant: IDownloadVariant = variants[i];
-      const downloadService: DownloadService = new DownloadService(authService, clientService, variant.quality, this.absolutePath);
+      const downloadService: DownloadService = new DownloadService(authService, clientService, this.absolutePath, variant.quality, track?.language);
       console.log(`[${variant.quality}]`);
       try {
         const downloadProcess: ChildProcess = await downloadService.start(download, variant.link, track?.link);
