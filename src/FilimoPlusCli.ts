@@ -28,6 +28,7 @@ class FilimoPlusCli {
     }
   };
 
+  private args = new Map<string, string|undefined>();
   private processes = new Map<string, ChildProcess>();
   private sleep = (duration: number) => new Promise<string>((resolve) => setTimeout(() => resolve('next'), duration));
 
@@ -45,14 +46,19 @@ class FilimoPlusCli {
       return;
     }
 
-    const firstArg: string | undefined = args[0];
+    args.forEach((arg) => {
+      const parts = arg.split('=');
+      const key = parts.shift();
+      const value = parts.shift();
+      this.args.set(key!, value);
+    });
 
-    if (firstArg === '--version') {
+    if (this.args.has('--version')) {
       this.printVersion();
       return;
     }
 
-    if (firstArg === '--author') {
+    if (this.args.has('--author')) {
       this.printAuthor();
       return;
     }
@@ -60,7 +66,7 @@ class FilimoPlusCli {
     this.printVersion();
     this.printAuthor();
 
-    await this.download(firstArg);
+    await this.download(this.args.get('--id'));
   }
 
   private printVersion(): void {
