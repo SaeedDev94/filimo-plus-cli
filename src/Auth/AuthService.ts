@@ -4,8 +4,8 @@ import { ClientService } from '../Client/ClientService';
 
 export class AuthService {
 
-  constructor(absolutePath: string) {
-    this.tokenFilePath = join(absolutePath, 'token');
+  constructor(absolutePath: string, file?: string) {
+    this.tokenFilePath = file ? file : join(absolutePath, 'token');
   }
 
   private readonly tokenFilePath: string;

@@ -80,7 +80,7 @@ class FilimoPlusCli {
   private async download(itemId?: string): Promise<void> {
     let id: string | undefined = itemId;
 
-    const authService: AuthService = new AuthService(this.absolutePath);
+    const authService: AuthService = new AuthService(this.absolutePath, this.args.get('--token-file'));
     const clientService: ClientService = new ClientService(authService);
     const domService: DataService = new DataService(clientService);
 
