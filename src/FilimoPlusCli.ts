@@ -141,13 +141,14 @@ class FilimoPlusCli {
       console.log(`Select "${trackOptions[0]}" audio track by default`);
     }
     if (download.tracks.length >= 2) {
-      const selected: string = await ReadlineService.question(
+      const selected: string = this.args.get('--lang') ?? await ReadlineService.question(
         'Select an audio track:',
         trackOptions
       );
+      track = download.tracks.find(w => w.language.toUpperCase() === selected.toUpperCase());
       const index: number = Number(selected) - 1;
-      if (Number.isNaN(index) || !download.tracks[index]) throw new Error(`Invalid audio track: "${selected}"`);
-      track = download.tracks[index];
+      if (!track && (Number.isNaN(index) || !download.tracks[index])) throw new Error(`Invalid audio track: "${selected}"`);
+      if (!track) track = download.tracks[index];
     }
 
     for (let i = 0 ; i < variants.length ; i++) {
