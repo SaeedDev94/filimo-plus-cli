@@ -26,7 +26,7 @@ You must create account in [filimo](https://www.filimo.com) and buy subscription
 + Run: `npm install`
 + Run: `npm run build:linux` or `npm run build:win32`
 + Run: `npm link`
-+ Run: `filimo-plus-cli` or `filimo-plus-cli $ID`
++ Run: `filimo-plus-cli` or `filimo-plus-cli --id=$ID`
 + Follow steps
 
 ### Support
