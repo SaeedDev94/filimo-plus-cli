@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { execSync } from 'child_process';
+import { ChildProcess, execSync } from 'child_process';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { AuthService } from './Auth/AuthService';
@@ -27,6 +27,9 @@ class FilimoPlusCli {
       url: string
     }
   };
+
+  private processes = new Map<string, ChildProcess>();
+  private sleep = (duration: number) => new Promise<string>((resolve) => setTimeout(() => resolve('next'), duration));
 
   async main(args: string[]): Promise<void> {
     if (['linux', 'win32'].indexOf(process.platform) === -1) {
@@ -146,9 +149,11 @@ class FilimoPlusCli {
       const downloadService: DownloadService = new DownloadService(authService, clientService, variant.quality, this.absolutePath);
       console.log(`[${variant.quality}]`);
       try {
-        await downloadService.start(download, variant.link, track?.link);
+        const downloadProcess: ChildProcess = await downloadService.start(download, variant.link, track?.link);
+        downloadProcess.on('close', () => this.processes.delete(variant.link));
+        this.processes.set(variant.link, downloadProcess);
         console.log('Downloading:');
-        await this.watch(downloadService, download.id);
+        await this.watch(downloadService, download, variant);
       } catch (exception) {
         console.error('Oops!', exception);
         throw new Error('Somethings went wrong!');
@@ -160,25 +165,24 @@ class FilimoPlusCli {
     console.log('Thanks!');
   }
 
-  private async watch(downloadService: DownloadService, id: string): Promise<void> {
-    const sleep = (duration: number) => new Promise<string>((resolve) => setTimeout(() => resolve('next'), duration));
-    const progress: number = downloadService.calcDownloadProgress(id);
+  private async watch(downloadService: DownloadService, download: IDownload, variant: IDownloadVariant): Promise<void> {
+    const progress: number = downloadService.calcDownloadProgress(download.id);
 
-    if (progress <= 100) {
+    if (this.processes.get(variant.link)) {
       process.stdout.clearLine(0);
       process.stdout.cursorTo(0);
       process.stdout.write(`${progress}%`);
-      if (progress !== 100) {
-        await sleep(1000);
-        await this.watch(downloadService, id);
-        return;
-      }
+      await this.sleep(1000);
+      await this.watch(downloadService, download, variant);
+      return;
     }
 
-    await sleep(1000);
+    if (progress !== 100) {
+      throw new Error(`download [item: ${download.id}, quality: ${variant.quality}] was incomplete, last progress: ${progress}%`);
+    }
 
     process.stdout.write('\n');
-    console.log(`Item downloaded: ${downloadService.itemFile(id)}`);
+    console.log(`Item downloaded: ${downloadService.itemFile(download.id)}`);
   }
 
 }
