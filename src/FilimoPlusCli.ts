@@ -122,14 +122,15 @@ class FilimoPlusCli {
       console.log(`Select "${variantOptions[0]}" quality variant by default`);
     }
     if (download.variants.length >= 2) {
-      const selectedVariants: string = await ReadlineService.question(
+      let selectedVariants: string = this.args.get('--quality') ?? await ReadlineService.question(
         'Select quality variants: [comma separated]',
         variantOptions
       );
       selectedVariants.split(',').forEach((selected: string) => {
+        const variant = download.variants.find(w => w.quality === selected);
         const index: number = Number(selected) - 1;
-        if (Number.isNaN(index) || !download.variants[index]) throw new Error(`Invalid quality variant: "${selected}"`);
-        variants.push(download.variants[index]);
+        if (!variant && (Number.isNaN(index) || !download.variants[index])) throw new Error(`Invalid quality variant: "${selected}"`);
+        variants.push(variant ?? download.variants[index]);
       });
     }
 
