@@ -66,7 +66,7 @@ class FilimoPlusCli {
     this.printVersion();
     this.printAuthor();
 
-    await this.download(this.args.get('--id'));
+    await this.download();
   }
 
   private printVersion(): void {
@@ -77,9 +77,7 @@ class FilimoPlusCli {
     console.log(`Author: ${this.package.author.name}`);
   }
 
-  private async download(itemId?: string): Promise<void> {
-    let id: string | undefined = itemId;
-
+  private async download(): Promise<void> {
     const authService: AuthService = new AuthService(this.absolutePath, this.args.get('--token-file'));
     const clientService: ClientService = new ClientService(authService);
     const domService: DataService = new DataService(clientService);
@@ -100,6 +98,7 @@ class FilimoPlusCli {
       throw new Error('Invalid auth token');
     }
 
+    let id: string | undefined = this.args.get('--id');
     if (!id) id = await ReadlineService.question('Enter id:');
     if (!id) throw new Error('No id!');
 
