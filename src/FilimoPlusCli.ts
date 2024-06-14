@@ -80,7 +80,7 @@ class FilimoPlusCli {
   private async download(): Promise<void> {
     const authService: AuthService = new AuthService(this.absolutePath, this.args.get('--token-file'));
     const clientService: ClientService = new ClientService(authService);
-    const domService: DataService = new DataService(clientService);
+    const dataService: DataService = new DataService(clientService);
 
     if (!authService.getToken()) {
       console.log("You don't have auth token");
@@ -105,7 +105,7 @@ class FilimoPlusCli {
     let download: IDownload;
     try {
       console.log(`Getting "${id}" info ...`);
-      download = await domService.getDownload(id);
+      download = await dataService.getDownload(id);
       console.log(`Name: "${download.name}"`);
     } catch (res: any) {
       throw new Error(`Invalid id: "${id}", statusCode: "${res?.statusCode}"`);

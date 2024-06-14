@@ -39,11 +39,10 @@ export class DataService {
     const data = await this.clientService.sendRequest(`https://api.filimo.com/api/fa/v1/movie/watch/watch/uid/${id}`);
     const res = JSON.parse(data.responseBody.toString());
     const attributes = res.data.attributes ?? {};
-    const info = attributes['info'] ?? {};
 
     return {
       id,
-      name: info?.text ?? '',
+      name: attributes?.movie_title ?? '',
       playlist: (attributes['multiSRC'] ?? []).reduce((carry: string, multiSRC: any[]) => {
         const source = multiSRC.find((source: any) => source.type === 'application/vnd.apple.mpegurl');
         if (!carry && !!source) carry = source.src;
