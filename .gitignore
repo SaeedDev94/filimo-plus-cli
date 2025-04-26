@@ -1,0 +1,6 @@
+.idea
+.vscode
+filimo-plus-cli*
+!cmd/*
+token
+media

@@ -1,0 +1,55 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - '*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build and Upload
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        os: [linux, windows]
+        arch: [amd64, arm64]
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+
+      - name: Set environment variables
+        run: |
+          echo "TAG_NAME=${{ github.ref_name }}" >> $GITHUB_ENV
+          echo "CGO_ENABLED=0" >> $GITHUB_ENV
+          echo "GOOS=${{ matrix.os }}" >> $GITHUB_ENV
+          echo "GOARCH=${{ matrix.arch }}" >> $GITHUB_ENV
+          if [ "${{ matrix.os }}" = "windows" ]; then
+            echo "EXT=.exe" >> $GITHUB_ENV
+          else
+            echo "EXT=" >> $GITHUB_ENV
+          fi
+
+      - name: Build binary
+        run: |
+          mkdir -p dist
+          go build \
+            -o dist/filimo-plus-cli-${{ env.TAG_NAME }}-${{ matrix.os }}-${{ matrix.arch }}${{ env.EXT }} \
+            -ldflags="-X main.isProduction=true -w -s -buildid=" \
+            -trimpath \
+            ./cmd/filimo-plus-cli
+
+      - name: Upload binaries
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/filimo-plus-cli-${{ env.TAG_NAME }}-${{ matrix.os }}-${{ matrix.arch }}${{ env.EXT }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
