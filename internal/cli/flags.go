@@ -23,7 +23,7 @@ func GetFlags(flagSet *flag.FlagSet, args *Args) []Flag {
 		{
 			ShortName: "t",
 			FullName:  "token",
-			Usage:     "<string> Token file",
+			Usage:     "<string> Token value",
 			Register: func(flag *Flag) {
 				flagSet.StringVar(&args.Token, flag.ShortName, args.Token, flag.Usage)
 				flagSet.StringVar(&args.Token, flag.FullName, args.Token, flag.Usage)
