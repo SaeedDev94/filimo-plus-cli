@@ -14,10 +14,11 @@ type BuildOption struct {
 	Path string
 }
 
-func Build(input string, output string) {
+func Build(input string, output string, fileName string) {
 	builder := stream.Builder{
 		Input:  input,
 		Output: output,
+		File:   fileName,
 	}
 
 	videoDir := stream.VideoDir(input)

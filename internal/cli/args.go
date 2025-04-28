@@ -12,6 +12,7 @@ type Args struct {
 	Token   string
 	Build   string
 	Output  string
+	File    string
 	Author  bool
 	Version bool
 	Help    bool

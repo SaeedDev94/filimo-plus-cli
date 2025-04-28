@@ -12,18 +12,23 @@ import (
 type Builder struct {
 	Input    string
 	Output   string
+	File     string
 	Video    string
 	Audio    []string
 	Subtitle []string
 }
 
+func (builder *Builder) outputPath(fileName string) string {
+	fileName = fmt.Sprintf("%s.mp4", fileName)
+	return path.Join(builder.Output, fileName)
+}
+
 func (builder *Builder) outputFile(dir string) string {
-	var fileName string
-	fileName = path.Base(dir)
+	fileName := path.Base(dir)
 	if fileName == "." {
 		fileName = "output"
 	}
-	return path.Join(builder.Output, fmt.Sprintf("%s.mp4", fileName))
+	return builder.outputPath(fileName)
 }
 
 func (builder *Builder) buildPlaylist(dir string) {
@@ -45,7 +50,13 @@ func (builder *Builder) make() {
 	inputsMap := []string{"-map", fmt.Sprintf("%d:v", inputIndex)}
 	actions := []string{"-c:v", "copy", "-c:a", "copy", "-c:s", "mov_text"}
 	metaData := []string{}
-	outputFile := builder.outputFile(builder.Input)
+
+	var output string
+	if builder.File == "" {
+		output = builder.outputFile(builder.Input)
+	} else {
+		output = builder.outputPath(builder.File)
+	}
 
 	if len(builder.Audio) == 0 {
 		inputsMap = append(inputsMap, "-map", fmt.Sprintf("%d:a", inputIndex))
@@ -70,7 +81,7 @@ func (builder *Builder) make() {
 	args = append(args, inputsMap...)
 	args = append(args, actions...)
 	args = append(args, metaData...)
-	args = append(args, "-y", outputFile)
+	args = append(args, "-y", output)
 	run(args)
 }
 
