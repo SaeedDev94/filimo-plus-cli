@@ -39,6 +39,15 @@ func GetFlags(flagSet *flag.FlagSet, args *Args) []Flag {
 			},
 		},
 		{
+			ShortName: "o",
+			FullName:  "output",
+			Usage:     "<string> output build directory",
+			Register: func(flag *Flag) {
+				flagSet.StringVar(&args.Output, flag.ShortName, args.Output, flag.Usage)
+				flagSet.StringVar(&args.Output, flag.FullName, args.Output, flag.Usage)
+			},
+		},
+		{
 			ShortName: "a",
 			FullName:  "author",
 			Usage:     "Print author name",

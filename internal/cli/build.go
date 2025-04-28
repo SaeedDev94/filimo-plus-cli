@@ -14,14 +14,15 @@ type BuildOption struct {
 	Path string
 }
 
-func Build(base string) {
+func Build(input string, output string) {
 	builder := stream.Builder{
-		Direcroty: base,
+		Input:  input,
+		Output: output,
 	}
 
-	videoDir := stream.VideoDir(base)
-	audioDir := stream.AudioDir(base)
-	subtitleDir := stream.SubtitleDir(base)
+	videoDir := stream.VideoDir(input)
+	audioDir := stream.AudioDir(input)
+	subtitleDir := stream.SubtitleDir(input)
 
 	var videoOptions []BuildOption
 	var audioOptions []BuildOption

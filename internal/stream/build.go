@@ -10,18 +10,42 @@ import (
 )
 
 type Builder struct {
-	Direcroty string
-	Video     string
-	Audio     []string
-	Subtitle  []string
+	Input    string
+	Output   string
+	Video    string
+	Audio    []string
+	Subtitle []string
 }
 
-func (builder Builder) make(fileName string) {
+func (builder *Builder) outputFile(dir string) string {
+	var fileName string
+	fileName = path.Base(dir)
+	if fileName == "." {
+		fileName = "output"
+	}
+	return path.Join(builder.Output, fmt.Sprintf("%s.mp4", fileName))
+}
+
+func (builder *Builder) buildPlaylist(dir string) {
+	playlistFile := PlaylistFile(dir)
+	streamFile := builder.outputFile(dir)
+	args := []string{
+		"-allowed_extensions", "ALL",
+		"-protocol_whitelist", "file,crypto",
+		"-i", playlistFile,
+		"-c", "copy",
+		"-y", streamFile,
+	}
+	run(args)
+}
+
+func (builder *Builder) make() {
 	var inputIndex int = 0
-	inputs := []string{"-i", stremaFile(builder.Video)}
+	inputs := []string{"-i", builder.outputFile(builder.Video)}
 	inputsMap := []string{"-map", fmt.Sprintf("%d:v", inputIndex)}
 	actions := []string{"-c:v", "copy", "-c:a", "copy", "-c:s", "mov_text"}
 	metaData := []string{}
+	outputFile := builder.outputFile(builder.Input)
 
 	if len(builder.Audio) == 0 {
 		inputsMap = append(inputsMap, "-map", fmt.Sprintf("%d:a", inputIndex))
@@ -29,7 +53,7 @@ func (builder Builder) make(fileName string) {
 
 	for index, audio := range builder.Audio {
 		inputIndex++
-		inputs = append(inputs, "-i", stremaFile(audio))
+		inputs = append(inputs, "-i", builder.outputFile(audio))
 		inputsMap = append(inputsMap, "-map", fmt.Sprintf("%d:a", inputIndex))
 		metaData = append(metaData, buildMetaData("a", index, audio)...)
 	}
@@ -46,23 +70,21 @@ func (builder Builder) make(fileName string) {
 	args = append(args, inputsMap...)
 	args = append(args, actions...)
 	args = append(args, metaData...)
-	args = append(args, "-y", fileName)
+	args = append(args, "-y", outputFile)
 	run(args)
 }
 
-func (builder Builder) Build() {
-	fileName := path.Join(builder.Direcroty, "video.mp4")
-
-	buildPlaylist(builder.Video)
-	for _, audio := range builder.Audio {
-		buildPlaylist(audio)
+func (builder *Builder) Build() {
+	if builder.Output == "" {
+		builder.Output = builder.Input
 	}
 
-	builder.make(fileName)
-}
+	builder.buildPlaylist(builder.Video)
+	for _, audio := range builder.Audio {
+		builder.buildPlaylist(audio)
+	}
 
-func stremaFile(dir string) string {
-	return path.Join(dir, "stream.mp4")
+	builder.make()
 }
 
 func buildMetaData(input string, index int, dir string) []string {
@@ -71,22 +93,6 @@ func buildMetaData(input string, index int, dir string) []string {
 		fmt.Sprintf("-metadata:s:%s:%d", input, index),
 		fmt.Sprintf("language=%s", helper.ConvertISO6391ToISO6392(language)),
 	}
-}
-
-func buildPlaylist(dir string) {
-	playlistFile := PlaylistFile(dir)
-	streamFile := stremaFile(dir)
-	if helper.IsFileExists(streamFile) {
-		return
-	}
-	args := []string{
-		"-allowed_extensions", "ALL",
-		"-protocol_whitelist", "file,crypto",
-		"-i", playlistFile,
-		"-c", "copy",
-		streamFile,
-	}
-	run(args)
 }
 
 func app() string {

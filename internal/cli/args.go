@@ -7,13 +7,14 @@ import (
 )
 
 type Args struct {
-	appName  string
-	Id       string
-	Token    string
-	Build    string
-	Author   bool
-	Version  bool
-	Help     bool
+	appName string
+	Id      string
+	Token   string
+	Build   string
+	Output  string
+	Author  bool
+	Version bool
+	Help    bool
 }
 
 func (args Args) PrintHelp() {
