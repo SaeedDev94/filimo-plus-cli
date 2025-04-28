@@ -5,30 +5,30 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"strings"
 
 	"github.com/saeeddev94/filimo-plus-cli/internal/helper"
 )
 
 type Builder struct {
+	output   string
 	Input    string
-	Output   string
 	File     string
 	Video    string
 	Audio    []string
 	Subtitle []string
 }
 
-func (builder *Builder) outputPath(fileName string) string {
-	fileName = fmt.Sprintf("%s.mp4", fileName)
-	return path.Join(builder.Output, fileName)
-}
-
 func (builder *Builder) outputFile(dir string) string {
+	fileExtension := ".mp4"
 	fileName := path.Base(dir)
 	if fileName == "." {
 		fileName = "output"
 	}
-	return builder.outputPath(fileName)
+	if !strings.Contains(fileName, fileExtension) {
+		fileName += fileExtension
+	}
+	return path.Join(builder.output, fileName)
 }
 
 func (builder *Builder) buildPlaylist(dir string) {
@@ -51,11 +51,11 @@ func (builder *Builder) make() {
 	actions := []string{"-c:v", "copy", "-c:a", "copy", "-c:s", "mov_text"}
 	metaData := []string{}
 
-	var output string
+	var outputFile string
 	if builder.File == "" {
-		output = builder.outputFile(builder.Input)
+		outputFile = builder.outputFile(builder.Input)
 	} else {
-		output = builder.outputPath(builder.File)
+		outputFile = builder.outputFile(builder.File)
 	}
 
 	if len(builder.Audio) == 0 {
@@ -81,13 +81,21 @@ func (builder *Builder) make() {
 	args = append(args, inputsMap...)
 	args = append(args, actions...)
 	args = append(args, metaData...)
-	args = append(args, "-y", output)
+	args = append(args, "-y", outputFile)
 	run(args)
 }
 
 func (builder *Builder) Build() {
-	if builder.Output == "" {
-		builder.Output = builder.Input
+	if builder.File != "" {
+		parent := path.Dir(builder.File)
+		if parent != "." {
+			builder.output = parent
+			helper.MakeDirectories(parent)
+		}
+	}
+
+	if builder.output == "" {
+		builder.output = builder.Input
 	}
 
 	builder.buildPlaylist(builder.Video)

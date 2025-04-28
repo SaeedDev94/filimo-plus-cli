@@ -8,7 +8,7 @@ func main() {
 	app := cli.NewApp(isProduction == "true")
 	args := cli.NewArgs(app.Name)
 	if args.Build != "" {
-		cli.Build(args.Build, args.Output, args.File)
+		cli.Build(args.Build, args.Output)
 		return
 	}
 	cli.Download(app, args)

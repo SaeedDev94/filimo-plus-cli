@@ -5,17 +5,17 @@ import (
 	"path/filepath"
 )
 
-func makeDirectories(path string) {
-	dir := filepath.Dir(path)
-	if dir != "." {
-		if err := os.MkdirAll(dir, 0755); err != nil {
-			panic(err)
-		}
+func MakeDirectories(path string) {
+	if path == "." || IsFileExists(path) {
+		return
+	}
+	if err := os.MkdirAll(path, 0755); err != nil {
+		panic(err)
 	}
 }
 
 func CreateFile(path string) *os.File {
-	makeDirectories(path)
+	MakeDirectories(filepath.Dir(path))
 	file, err := os.Create(path)
 	if err != nil {
 		panic(file)
