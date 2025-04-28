@@ -16,6 +16,7 @@ You must create account in [filimo](https://www.filimo.com) and buy subscription
 
 + linux
 + windows
++ darwin
 
 ### How to download
 

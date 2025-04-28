@@ -10,16 +10,15 @@ permissions:
 
 jobs:
   build:
-    name: Build and Upload
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        os: [linux, windows]
+        os: [linux, windows, darwin]
         arch: [amd64, arm64]
 
     steps:
-      - name: Checkout source
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up Go
@@ -39,7 +38,7 @@ jobs:
 
       - name: Build binary
         run: |
-          mkdir -p dist
+          mkdir dist
           go build \
             -o dist/filimo-plus-cli-${{ env.TAG_NAME }}-${{ matrix.os }}-${{ matrix.arch }}${{ env.EXT }} \
             -ldflags="-X main.isProduction=true -w -s -buildid=" \
@@ -53,7 +52,6 @@ jobs:
           path: dist/*
 
   release:
-    name: Create Release
     needs: build
     runs-on: ubuntu-latest
 
