@@ -2,15 +2,17 @@ package helper
 
 import "net/url"
 
+func NewUrl(address string) *url.URL {
+	url, err := url.Parse(address)
+	if err != nil {
+		panic(err)
+	}
+	return url
+}
+
 func AbsoluteUrl(first string, second string) *url.URL {
-	firstUrl, firstErr := url.Parse(first)
-	secondUrl, secondErr := url.Parse(second)
-	if firstErr != nil {
-		panic(firstErr)
-	}
-	if secondErr != nil {
-		panic(secondErr)
-	}
+	firstUrl := NewUrl(first)
+	secondUrl := NewUrl(second)
 	if secondUrl.IsAbs() {
 		return secondUrl
 	}

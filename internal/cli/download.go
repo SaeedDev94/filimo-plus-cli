@@ -2,6 +2,8 @@ package cli
 
 import (
 	"fmt"
+	"path"
+	"strings"
 
 	"github.com/saeeddev94/filimo-plus-cli/internal/api"
 	"github.com/saeeddev94/filimo-plus-cli/internal/helper"
@@ -58,6 +60,11 @@ func Download(app App, args Args) {
 		if id == "" {
 			panic("No id!")
 		}
+	}
+
+	if strings.Index(id, "https://") == 0 {
+		url := helper.NewUrl(id)
+		id = path.Base(url.Path)
 	}
 
 	watch := api.GetWatch(httpClient, id)
