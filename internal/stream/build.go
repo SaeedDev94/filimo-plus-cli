@@ -11,12 +11,12 @@ import (
 )
 
 type Builder struct {
-	output   string
-	Input    string
-	Output   string
-	Video    string
-	Audio    []string
-	Subtitle []string
+	directory string
+	Input     string
+	Output    string
+	Video     string
+	Audio     []string
+	Subtitle  []string
 }
 
 func (builder *Builder) outputFile(dir string) string {
@@ -28,7 +28,7 @@ func (builder *Builder) outputFile(dir string) string {
 	if !strings.Contains(fileName, fileExtension) {
 		fileName += fileExtension
 	}
-	return path.Join(builder.output, fileName)
+	return path.Join(builder.directory, fileName)
 }
 
 func (builder *Builder) buildPlaylist(dir string) {
@@ -87,12 +87,12 @@ func (builder *Builder) make() {
 
 func (builder *Builder) Build() {
 	if builder.Output != "" {
-		builder.output = path.Dir(builder.Output)
-		helper.MakeDirectories(builder.output)
+		builder.directory = path.Dir(builder.Output)
+		helper.MakeDirectories(builder.directory)
 	}
 
-	if builder.output == "" {
-		builder.output = builder.Input
+	if builder.directory == "" {
+		builder.directory = builder.Input
 	}
 
 	builder.buildPlaylist(builder.Video)
