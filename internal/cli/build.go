@@ -16,8 +16,8 @@ type BuildOption struct {
 
 func Build(input string, output string) {
 	builder := stream.Builder{
-		Input: input,
-		File:  output,
+		Input:  input,
+		Output: output,
 	}
 
 	videoDir := stream.VideoDir(input)

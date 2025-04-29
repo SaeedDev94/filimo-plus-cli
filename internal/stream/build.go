@@ -13,7 +13,7 @@ import (
 type Builder struct {
 	output   string
 	Input    string
-	File     string
+	Output   string
 	Video    string
 	Audio    []string
 	Subtitle []string
@@ -52,10 +52,10 @@ func (builder *Builder) make() {
 	metaData := []string{}
 
 	var outputFile string
-	if builder.File == "" {
+	if builder.Output == "" {
 		outputFile = builder.outputFile(builder.Input)
 	} else {
-		outputFile = builder.outputFile(builder.File)
+		outputFile = builder.outputFile(builder.Output)
 	}
 
 	if len(builder.Audio) == 0 {
@@ -86,8 +86,8 @@ func (builder *Builder) make() {
 }
 
 func (builder *Builder) Build() {
-	if builder.File != "" {
-		builder.output = path.Dir(builder.File)
+	if builder.Output != "" {
+		builder.output = path.Dir(builder.Output)
 		helper.MakeDirectories(builder.output)
 	}
 
