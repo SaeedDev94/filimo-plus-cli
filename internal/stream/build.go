@@ -87,11 +87,8 @@ func (builder *Builder) make() {
 
 func (builder *Builder) Build() {
 	if builder.File != "" {
-		parent := path.Dir(builder.File)
-		if parent != "." {
-			builder.output = parent
-			helper.MakeDirectories(parent)
-		}
+		builder.output = path.Dir(builder.File)
+		helper.MakeDirectories(builder.output)
 	}
 
 	if builder.output == "" {
