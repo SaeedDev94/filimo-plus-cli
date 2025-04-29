@@ -12,6 +12,7 @@ import (
 
 type Builder struct {
 	directory string
+	temporary []string
 	Input     string
 	Output    string
 	Video     string
@@ -34,6 +35,7 @@ func (builder *Builder) outputFile(dir string) string {
 func (builder *Builder) buildPlaylist(dir string) {
 	playlistFile := PlaylistFile(dir)
 	outputFile := builder.outputFile(dir)
+	builder.temporary = append(builder.temporary, outputFile)
 	args := []string{
 		"-allowed_extensions", "ALL",
 		"-protocol_whitelist", "file,crypto",
@@ -85,6 +87,12 @@ func (builder *Builder) make() {
 	run(args)
 }
 
+func (builder *Builder) cleanup() {
+	for _, tmp := range builder.temporary {
+		helper.DeleteFile(tmp)
+	}
+}
+
 func (builder *Builder) Build() {
 	if builder.Output != "" {
 		builder.directory = path.Dir(builder.Output)
@@ -101,6 +109,7 @@ func (builder *Builder) Build() {
 	}
 
 	builder.make()
+	builder.cleanup()
 }
 
 func buildMetaData(input string, index int, dir string) []string {
