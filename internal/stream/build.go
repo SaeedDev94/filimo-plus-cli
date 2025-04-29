@@ -33,13 +33,13 @@ func (builder *Builder) outputFile(dir string) string {
 
 func (builder *Builder) buildPlaylist(dir string) {
 	playlistFile := PlaylistFile(dir)
-	streamFile := builder.outputFile(dir)
+	outputFile := builder.outputFile(dir)
 	args := []string{
 		"-allowed_extensions", "ALL",
 		"-protocol_whitelist", "file,crypto",
 		"-i", playlistFile,
 		"-c", "copy",
-		"-y", streamFile,
+		"-y", outputFile,
 	}
 	run(args)
 }
