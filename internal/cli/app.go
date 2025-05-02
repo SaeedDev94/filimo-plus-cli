@@ -31,7 +31,7 @@ func NewApp(isProduction bool) App {
 	return App{
 		Name:     "filimo-plus-cli",
 		Author:   "SaeedDev94",
-		Version:  "v6.3.0",
+		Version:  "v6.4.0",
 		BasePath: basePath,
 	}
 }
