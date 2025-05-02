@@ -101,7 +101,7 @@ func Download(app App, args Args) {
 
 	var downloadDir string
 	if args.Output == "" {
-		downloadDir = stream.DownloadDir(args.Id)
+		downloadDir = stream.DownloadDir(id)
 	} else {
 		downloadDir = stream.DownloadDir(args.Output)
 	}
