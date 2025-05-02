@@ -25,18 +25,6 @@ func AudioDir(base string) string {
 	return path.Join(base, "audio")
 }
 
-func SubtitlePath(base string, language string) string {
-	return path.Join(SubtitleDir(base), language)
-}
-
-func VideoPath(base string, quality string) string {
-	return path.Join(VideoDir(base), quality)
-}
-
-func AudioPath(base string, language string) string {
-	return path.Join(AudioDir(base), language)
-}
-
 func SrtFile(dir string) string {
 	return path.Join(dir, "subtitle.srt")
 }
@@ -51,7 +39,7 @@ func DownloadSubtitle(client helper.HttpClient, subtitle api.WatchSubtitle, base
 	if statusErr != nil {
 		panic(statusErr)
 	}
-	dir := SubtitlePath(base, subtitle.Language)
+	dir := path.Join(SubtitleDir(base), subtitle.Language)
 	file := SrtFile(dir)
 	content = strings.ReplaceAll(content, "WEBVTT", "")
 	content = strings.TrimSpace(content) + "\n"
@@ -59,21 +47,17 @@ func DownloadSubtitle(client helper.HttpClient, subtitle api.WatchSubtitle, base
 }
 
 func DownloadVideo(client helper.HttpClient, variant HlsVideoVariant, base string) {
-	download(client, variant.Link, variant.Quality, base, true)
+	dir := path.Join(VideoDir(base), variant.Quality)
+	download(client, variant.Link, dir)
 }
 
 func DownloadAudio(client helper.HttpClient, track HlsAudioTrack, base string) {
-	download(client, track.Link, track.Language, base, false)
+	dir := path.Join(AudioDir(base), track.Language)
+	download(client, track.Link, dir)
 }
 
-func download(client helper.HttpClient, link string, name string, base string, isVideo bool) {
+func download(client helper.HttpClient, link string, dir string) {
 	playlist := GetPlaylist(client, link)
-	var dir string
-	if isVideo {
-		dir = VideoPath(base, name)
-	} else {
-		dir = AudioPath(base, name)
-	}
 	helper.WriteFile(PlaylistFile(dir), playlist.Content)
 	for _, chunkUrl := range playlist.Urls {
 		chunkPath := path.Join(dir, path.Base(chunkUrl.Path))
