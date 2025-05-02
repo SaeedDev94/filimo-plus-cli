@@ -9,8 +9,8 @@ import (
 	"github.com/saeeddev94/filimo-plus-cli/internal/helper"
 )
 
-func DownloadDir(id string) string {
-	return path.Join("media", id)
+func DownloadDir(name string) string {
+	return path.Join("media", name)
 }
 
 func SubtitleDir(base string) string {
@@ -45,34 +45,34 @@ func PlaylistFile(dir string) string {
 	return path.Join(dir, "playlist.m3u8")
 }
 
-func DownloadSubtitle(client helper.HttpClient, subtitle api.WatchSubtitle, id string) {
+func DownloadSubtitle(client helper.HttpClient, subtitle api.WatchSubtitle, base string) {
 	fmt.Printf("Subtitle [%s]\n", subtitle.Language)
 	content, statusErr := client.Get(subtitle.Link)
 	if statusErr != nil {
 		panic(statusErr)
 	}
-	dir := SubtitlePath(DownloadDir(id), subtitle.Language)
+	dir := SubtitlePath(base, subtitle.Language)
 	file := SrtFile(dir)
 	content = strings.ReplaceAll(content, "WEBVTT", "")
 	content = strings.TrimSpace(content) + "\n"
 	helper.WriteFile(file, content)
 }
 
-func DownloadVideo(client helper.HttpClient, variant HlsVideoVariant, id string) {
-	download(client, variant.Link, variant.Quality, id, true)
+func DownloadVideo(client helper.HttpClient, variant HlsVideoVariant, base string) {
+	download(client, variant.Link, variant.Quality, base, true)
 }
 
-func DownloadAudio(client helper.HttpClient, track HlsAudioTrack, id string) {
-	download(client, track.Link, track.Language, id, false)
+func DownloadAudio(client helper.HttpClient, track HlsAudioTrack, base string) {
+	download(client, track.Link, track.Language, base, false)
 }
 
-func download(client helper.HttpClient, link string, name string, id string, isVideo bool) {
+func download(client helper.HttpClient, link string, name string, base string, isVideo bool) {
 	playlist := GetPlaylist(client, link)
 	var dir string
 	if isVideo {
-		dir = VideoPath(DownloadDir(id), name)
+		dir = VideoPath(base, name)
 	} else {
-		dir = AudioPath(DownloadDir(id), name)
+		dir = AudioPath(base, name)
 	}
 	helper.WriteFile(PlaylistFile(dir), playlist.Content)
 	for _, chunkUrl := range playlist.Urls {

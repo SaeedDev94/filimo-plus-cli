@@ -99,18 +99,25 @@ func Download(app App, args Args) {
 		selectedSubtitles = helper.Question(SUBTITLE_STEP, options)
 	}
 
+	var downloadDir string
+	if args.Output == "" {
+		downloadDir = stream.DownloadDir(args.Id)
+	} else {
+		downloadDir = stream.DownloadDir(args.Output)
+	}
+
 	for _, item := range selectedSubtitles {
 		subtitle := watch.Data.Attributes.Subtitles[item]
-		stream.DownloadSubtitle(httpClient, subtitle, id)
+		stream.DownloadSubtitle(httpClient, subtitle, downloadDir)
 	}
 
 	for _, item := range selectedVariants {
 		variant := hls.Variants[item]
-		stream.DownloadVideo(httpClient, variant, id)
+		stream.DownloadVideo(httpClient, variant, downloadDir)
 	}
 
 	for _, item := range selectedTracks {
 		track := hls.Tracks[item]
-		stream.DownloadAudio(httpClient, track, id)
+		stream.DownloadAudio(httpClient, track, downloadDir)
 	}
 }
