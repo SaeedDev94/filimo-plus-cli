@@ -1,15 +1,17 @@
 package helper
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 )
 
 func Input(label string) string {
 	fmt.Println(label)
-	var input string
-	fmt.Scanln(&input)
+	reader := bufio.NewReader(os.Stdin)
+	input, _ := reader.ReadString('\n')
 	return strings.TrimSpace(input)
 }
 
