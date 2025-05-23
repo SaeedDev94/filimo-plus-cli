@@ -3,6 +3,7 @@ package stream
 import (
 	"fmt"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/saeeddev94/filimo-plus-cli/internal/api"
@@ -10,7 +11,16 @@ import (
 )
 
 func DownloadDir(name string) string {
-	return path.Join("media", name)
+	absDir, _ := filepath.Abs("media")
+	absPath, err := filepath.Abs(name)
+	if err != nil {
+		panic(err)
+	}
+	rel, _ := filepath.Rel(absDir, absPath)
+	if !strings.HasPrefix(rel, "..") {
+		return absPath
+	}
+	return path.Join(absDir, name)
 }
 
 func SubtitleDir(base string) string {
