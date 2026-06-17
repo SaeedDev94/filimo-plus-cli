@@ -2,6 +2,7 @@ package stream
 
 import (
 	"fmt"
+	"os"
 	"path"
 	"path/filepath"
 	"strings"
@@ -71,6 +72,11 @@ func download(client helper.HttpClient, link string, dir string) {
 	helper.WriteFile(PlaylistFile(dir), playlist.Content)
 	for _, chunkUrl := range playlist.Urls {
 		chunkPath := path.Join(dir, path.Base(chunkUrl.Path))
+
+		if _, err := os.Stat(chunkPath); err == nil {
+			continue
+		}
+
 		client.DownloadFile(chunkUrl.String(), chunkPath)
 	}
 }
