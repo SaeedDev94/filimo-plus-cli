@@ -113,11 +113,11 @@ func Download(app App, args Args) {
 
 	for _, item := range selectedVariants {
 		variant := hls.Variants[item]
-		stream.DownloadVideo(httpClient, variant, downloadDir)
+		stream.DownloadVideo(httpClient, variant, downloadDir, args.IsContinueDownload)
 	}
 
 	for _, item := range selectedTracks {
 		track := hls.Tracks[item]
-		stream.DownloadAudio(httpClient, track, downloadDir)
+		stream.DownloadAudio(httpClient, track, downloadDir, args.IsContinueDownload)
 	}
 }

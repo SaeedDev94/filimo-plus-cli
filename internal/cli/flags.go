@@ -48,6 +48,15 @@ func GetFlags(flagSet *flag.FlagSet, args *Args) []Flag {
 			},
 		},
 		{
+			ShortName: "c",
+			FullName:  "continue",
+			Usage:     "Continue download",
+			Register: func(flag *Flag) {
+				flagSet.BoolVar(&args.IsContinueDownload, flag.ShortName, args.IsContinueDownload, flag.Usage)
+				flagSet.BoolVar(&args.IsContinueDownload, flag.FullName, args.IsContinueDownload, flag.Usage)
+			},
+		},
+		{
 			ShortName: "a",
 			FullName:  "author",
 			Usage:     "Print author name",

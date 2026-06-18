@@ -2,6 +2,7 @@ package stream
 
 import (
 	"fmt"
+	"os"
 	"path"
 	"path/filepath"
 	"strings"
@@ -56,21 +57,26 @@ func DownloadSubtitle(client helper.HttpClient, subtitle api.WatchSubtitle, base
 	helper.WriteFile(file, content)
 }
 
-func DownloadVideo(client helper.HttpClient, variant HlsVideoVariant, base string) {
+func DownloadVideo(client helper.HttpClient, variant HlsVideoVariant, base string, is_continue_download bool) {
 	dir := path.Join(VideoDir(base), variant.Quality)
-	download(client, variant.Link, dir)
+	download(client, variant.Link, dir, is_continue_download)
 }
 
-func DownloadAudio(client helper.HttpClient, track HlsAudioTrack, base string) {
+func DownloadAudio(client helper.HttpClient, track HlsAudioTrack, base string, is_continue_download bool) {
 	dir := path.Join(AudioDir(base), track.Language)
-	download(client, track.Link, dir)
+	download(client, track.Link, dir, is_continue_download)
 }
 
-func download(client helper.HttpClient, link string, dir string) {
+func download(client helper.HttpClient, link string, dir string, is_continue_download bool) {
 	playlist := GetPlaylist(client, link)
 	helper.WriteFile(PlaylistFile(dir), playlist.Content)
 	for _, chunkUrl := range playlist.Urls {
 		chunkPath := path.Join(dir, path.Base(chunkUrl.Path))
+
+		if _, err := os.Stat(chunkPath); is_continue_download && err == nil {
+			continue
+		}
+
 		client.DownloadFile(chunkUrl.String(), chunkPath)
 	}
 }
